@@ -35,7 +35,7 @@ public class DuelCommand implements CommandExecutor {
         switch (sub) {
             case "join":
                 if (args.length < 2) {
-                    player.sendMessage("Usage: /duel join <kit>");
+                    me.raikou.duels.util.MessageUtil.sendError(player, "Usage: <yellow>/duel join <kit>");
                     return true;
                 }
                 String kit = args[1];
@@ -48,7 +48,7 @@ public class DuelCommand implements CommandExecutor {
 
             case "admin":
                 if (!player.hasPermission("duels.admin")) {
-                    player.sendMessage("No permission.");
+                    me.raikou.duels.util.MessageUtil.sendError(player, "You do not have permission.");
                     return true;
                 }
                 if (args.length < 2) {
@@ -59,7 +59,7 @@ public class DuelCommand implements CommandExecutor {
                 break;
 
             default:
-                player.sendMessage("Unknown subcommand.");
+                me.raikou.duels.util.MessageUtil.sendError(player, "Unknown subcommand.");
                 break;
         }
 
@@ -74,13 +74,13 @@ public class DuelCommand implements CommandExecutor {
             plugin.getArenaManager().loadArenas();
             plugin.getKitManager().loadKits();
             plugin.getLobbyManager().loadLobby();
-            player.sendMessage("Configuration reloaded.");
+            me.raikou.duels.util.MessageUtil.sendSuccess(player, "Configuration reloaded successfully.");
             return;
         }
 
         if (sub.equals("setlobby")) {
             plugin.getLobbyManager().setLobby(player.getLocation());
-            player.sendMessage("§aLobby location set!");
+            me.raikou.duels.util.MessageUtil.sendSuccess(player, "Lobby location has been set!");
             return;
         }
 
@@ -94,7 +94,8 @@ public class DuelCommand implements CommandExecutor {
 
             if (action.equals("create")) {
                 plugin.getKitManager().createKit(name, player);
-                player.sendMessage("Kit " + name + " created from your inventory.");
+                me.raikou.duels.util.MessageUtil.sendSuccess(player,
+                        "Kit <yellow>" + name + "</yellow> created from your inventory.");
             }
             return;
         }
@@ -147,17 +148,24 @@ public class DuelCommand implements CommandExecutor {
     }
 
     private void sendHelp(Player player) {
-        player.sendMessage(" ");
-        player.sendMessage("§6§lDUELS CORE §7- §eCommands");
-        player.sendMessage("§7/duel join <kit> §f- Join the queue");
-        player.sendMessage("§7/duel leave §f- Leave the queue");
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                "<newline><gradient:#FFD700:#FFA500><bold>DUELS CORE</bold></gradient> <gray>- Commands</gray>"));
+        player.sendMessage(me.raikou.duels.util.MessageUtil
+                .parse("<dark_gray>▪</dark_gray> <yellow>/duel join <kit></yellow> <gray>Join the queue</gray>"));
+        player.sendMessage(me.raikou.duels.util.MessageUtil
+                .parse("<dark_gray>▪</dark_gray> <yellow>/duel leave</yellow> <gray>Leave the queue</gray>"));
         if (player.hasPermission("duels.admin")) {
-            player.sendMessage("§7/duel admin arena create <name> §f- Create arena");
-            player.sendMessage("§7/duel admin arena setspawn <name> <1|2|spectator> §f- Set spawns");
-            player.sendMessage("§7/duel admin kit create <name> §f- Save inventory as kit");
-            player.sendMessage("§7/duel admin setlobby §f- Set lobby location");
-            player.sendMessage("§7/duel admin reload §f- Reload config");
+            player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                    "<dark_gray>▪</dark_gray> <yellow>/duel admin arena create <name></yellow> <gray>Create arena</gray>"));
+            player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                    "<dark_gray>▪</dark_gray> <yellow>/duel admin arena setspawn <name> <1|2|spect></yellow> <gray>Set spawns</gray>"));
+            player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                    "<dark_gray>▪</dark_gray> <yellow>/duel admin kit create <name></yellow> <gray>Save inventory as kit</gray>"));
+            player.sendMessage(me.raikou.duels.util.MessageUtil
+                    .parse("<dark_gray>▪</dark_gray> <yellow>/duel admin setlobby</yellow> <gray>Set lobby</gray>"));
+            player.sendMessage(me.raikou.duels.util.MessageUtil
+                    .parse("<dark_gray>▪</dark_gray> <yellow>/duel admin reload</yellow> <gray>Reload config</gray>"));
         }
-        player.sendMessage(" ");
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(" "));
     }
 }

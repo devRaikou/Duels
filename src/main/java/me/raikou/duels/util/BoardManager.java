@@ -3,8 +3,7 @@ package me.raikou.duels.util;
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import me.raikou.duels.DuelsPlugin;
 import me.raikou.duels.duel.Duel;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import me.raikou.duels.duel.Duel;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -51,32 +50,39 @@ public class BoardManager {
 
         Objective obj = board.getObjective("sidebar");
         if (obj == null) {
-            obj = board.registerNewObjective("sidebar", Criteria.DUMMY, Component.text("DUELS", NamedTextColor.GOLD));
+            obj = board.registerNewObjective("sidebar", Criteria.DUMMY, me.raikou.duels.util.MessageUtil
+                    .parse("<bold><gradient:#FFD700:#FFA500> DUELS </gradient></bold>"));
             obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         }
 
         Duel duel = plugin.getDuelManager().getDuel(player);
 
-        // Reset scores (Simple clears all lines)
-        // For production, updating existing lines (Teams) is better to prevent flicker.
-        // But for this MVP level, simple reset is acceptable if flash is not too bad.
-        // Actually, let's just use lines 15 down to 1.
         for (String entry : board.getEntries()) {
             board.resetScores(entry);
         }
 
         if (duel != null) {
             // Game Board
-            obj.getScore("§7Map: §f" + duel.getArena().getName()).setScore(5);
-            obj.getScore("§7Opponent: §c" + getOpponentName(player, duel)).setScore(4);
-            obj.getScore(" ").setScore(3);
-            obj.getScore("§eplay.raikou.com").setScore(1);
+            obj.getScore("§7<gray>  " + java.time.LocalDate.now().toString()).setScore(10);
+            obj.getScore("§1").setScore(9);
+            obj.getScore("§fOpponent:").setScore(8);
+            obj.getScore("§c " + getOpponentName(player, duel)).setScore(7);
+            obj.getScore("§2").setScore(6);
+            obj.getScore("§fMap:").setScore(5);
+            obj.getScore("§a " + duel.getArena().getName()).setScore(4);
+            obj.getScore("§3").setScore(3);
+            obj.getScore("§epvp.raikou.com").setScore(1);
         } else {
             // Lobby Board
-            obj.getScore("§7Wins: §fUnknown").setScore(5); // Would need async fetch or cache
-            obj.getScore("§7Queue: §f" + (plugin.getQueueManager().isInQueue(player) ? "Yes" : "No")).setScore(4);
-            obj.getScore(" ").setScore(3);
-            obj.getScore("§eplay.raikou.com").setScore(1);
+            obj.getScore("§7<gray>  " + java.time.LocalDate.now().toString()).setScore(10);
+            obj.getScore("§1").setScore(9);
+            obj.getScore("§fOnline:").setScore(8);
+            obj.getScore("§a " + Bukkit.getOnlinePlayers().size()).setScore(7);
+            obj.getScore("§2").setScore(6);
+            obj.getScore("§fIn Queue:").setScore(5);
+            obj.getScore("§e " + (plugin.getQueueManager().isInQueue(player) ? "Yes" : "No")).setScore(4);
+            obj.getScore("§3").setScore(3);
+            obj.getScore("§epvp.raikou.com").setScore(1);
         }
     }
 

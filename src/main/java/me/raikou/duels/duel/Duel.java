@@ -6,7 +6,7 @@ import me.raikou.duels.DuelsPlugin;
 import me.raikou.duels.arena.Arena;
 import me.raikou.duels.arena.ArenaState;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -53,11 +53,28 @@ public class Duel {
             public void run() {
                 if (count == 0) {
                     state = DuelState.FIGHTING;
-                    sendMessageToAll(Component.text("Duel Started!", NamedTextColor.GREEN));
+                    for (UUID uuid : players) {
+                        Player p = Bukkit.getPlayer(uuid);
+                        if (p != null) {
+                            p.showTitle(net.kyori.adventure.title.Title.title(
+                                    me.raikou.duels.util.MessageUtil.parse("<green>FIGHT!"),
+                                    me.raikou.duels.util.MessageUtil.parse("<gray>Good luck!")));
+                            p.sendMessage(me.raikou.duels.util.MessageUtil.prefix("<green>Duel Started!"));
+                        }
+                    }
                     cancel();
                     return;
                 }
-                sendMessageToAll(Component.text("Starting in " + count + "...", NamedTextColor.YELLOW));
+
+                for (UUID uuid : players) {
+                    Player p = Bukkit.getPlayer(uuid);
+                    if (p != null) {
+                        p.showTitle(net.kyori.adventure.title.Title.title(
+                                me.raikou.duels.util.MessageUtil.parse("<yellow>" + count),
+                                Component.empty()));
+                        p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 2f);
+                    }
+                }
                 count--;
             }
         }.runTaskTimer(plugin, 0L, 20L);
@@ -76,9 +93,18 @@ public class Duel {
         this.arena.setState(ArenaState.ENDING);
 
         Player winnerPlayer = Bukkit.getPlayer(winner);
-        Component winnerName = winnerPlayer != null ? winnerPlayer.name() : Component.text("Unknown");
+        String winnerName = winnerPlayer != null ? winnerPlayer.getName() : "Unknown";
 
-        sendMessageToAll(Component.text("Duel Ended! Winner: ", NamedTextColor.GOLD).append(winnerName));
+        for (UUID uuid : players) {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                p.showTitle(net.kyori.adventure.title.Title.title(
+                        me.raikou.duels.util.MessageUtil.parse("<gold>VICTORY!"),
+                        me.raikou.duels.util.MessageUtil.parse("<yellow>Winner: <white>" + winnerName)));
+                p.sendMessage(
+                        me.raikou.duels.util.MessageUtil.prefix("<gold>Duel Ended! Winner: <yellow>" + winnerName));
+            }
+        }
 
         // Cleanup after delay
         new BukkitRunnable() {
