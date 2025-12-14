@@ -11,6 +11,13 @@ settings:
 server:
   location: "Ankara, Turkey"
 
+# ==========================================
+#            COMBAT SETTINGS
+# ==========================================
+combat:
+  # Enable 1.8 legacy PvP mechanics (no attack cooldown, no sweep attacks)
+  legacy-pvp: true
+
 storage:
   # Type of storage: 'mysql' or 'sqlite'
   # sqlite: Using local file (database.db) in plugin folder. No setup required.
@@ -106,41 +113,38 @@ lobby:
 # %elo%       - Your ELO (Ranked only)
 # %opponent_elo% - Opponent ELO (Ranked only)
 scoreboard:
-  title: <bold><gradient:#FFD700:#FFA500> DUELS </gradient></bold>
+  title: '<aqua><bold>Duels</bold></aqua> <dark_gray>|</dark_gray> <white>Practice</white>'
   lobby:
-  - §7<gray>  %date%
-  - §1
-  - '§fOnline:'
-  - §a %online%
-  - §2
-  - '§fIn Queue:'
-  - §e %queue%
-  - §3
-  - §eplay.raikou.dev
+    - ' §8§m             '
+    - '  '
+    - ' <white>Players: <aqua>%online% '
+    - ' <white>Ping: <aqua>%ping%<gray>ms '
+    - ' <white>Queue: <aqua>%queue% '
+    - '  '
+    - ' §8§m             '
+    - ' <dark_aqua>raikou.dev '
   game:
-  - §7<gray>  %date%
-  - §1
-  - '§fOpponent:'
-  - §c %opponent%
-  - §2
-  - '§fMap:'
-  - §a %map%
-  - §3
-  - §eplay.raikou.dev
+    - ' §8§m             '
+    - '  '
+    - ' <white>Opponent: '
+    - ' <yellow>%opponent% '
+    - '  '
+    - ' <white>Arena: <green>%map% '
+    - '  '
+    - ' §8§m             '
+    - ' <dark_aqua>raikou.dev '
   game-ranked:
-  - §7<gray>  %date%
-  - §1
-  - '§fOpponent:'
-  - §c %opponent% §7(%opponent_elo%)
-  - §2
-  - '§fYour ELO:'
-  - §e %elo%
-  - §3
-  - '§fMap:'
-  - §a %map%
-  - §4
-  - §eplay.raikou.dev
-
+    - ' §8§m             '
+    - ' <gold>RANKED '
+    - '  '
+    - ' <white>Opponent: '
+    - ' <yellow>%opponent% <gray>[%opponent_elo%] '
+    - '  '
+    - ' <white>ELO: <yellow>%elo% '
+    - ' <white>Arena: <green>%map% '
+    - '  '
+    - ' §8§m             '
+    - ' <dark_aqua>raikou.dev '
 # ==========================================
 #         DISCORD LOGGING
 # ==========================================

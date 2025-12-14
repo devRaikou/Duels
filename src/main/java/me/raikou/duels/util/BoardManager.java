@@ -73,8 +73,12 @@ public class BoardManager {
             board.resetScores(entry);
         }
 
-        // Process lines in reverse order (Scoreboard scores go down)
+        // Unique color codes for making duplicate lines unique
+        String[] uniqueCodes = { "§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d",
+                "§e", "§f" };
+        int uniqueIndex = 0;
         int score = lines.size();
+
         for (String line : lines) {
             // Replace Placeholders
             line = line.replace("%date%", java.time.LocalDate.now().toString());
@@ -101,10 +105,24 @@ public class BoardManager {
                 line = line.replace("%opponent_elo%", "N/A");
             }
 
-            line = convertLegacyToMiniMessage(line);
-            net.kyori.adventure.text.Component comp = me.raikou.duels.util.MessageUtil.parse(line);
-            String legacyLine = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
-                    .serialize(comp);
+            // Handle the line - check if it's a legacy color code line or MiniMessage
+            String legacyLine;
+            if (line.contains("§")) {
+                // Already legacy format, use directly
+                legacyLine = line;
+            } else {
+                // Convert MiniMessage to legacy
+                line = convertLegacyToMiniMessage(line);
+                net.kyori.adventure.text.Component comp = me.raikou.duels.util.MessageUtil.parse(line);
+                legacyLine = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
+                        .serialize(comp);
+            }
+
+            // Add unique invisible suffix to prevent duplicate entries
+            if (uniqueIndex < uniqueCodes.length) {
+                legacyLine = legacyLine + uniqueCodes[uniqueIndex];
+                uniqueIndex++;
+            }
 
             obj.getScore(legacyLine).setScore(score);
             score--;

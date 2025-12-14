@@ -49,6 +49,9 @@ editor:
   saved: "Kit layout saved!"
   cancelled: "Editing cancelled."
 
+combat:
+  blocking: "<gray>⛨ Blocking..."
+
 gui:
   queue:
     title: "<gradient:#FFD700:#FFA500><bold>Select a Kit</bold></gradient>"

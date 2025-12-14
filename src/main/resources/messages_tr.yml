@@ -49,6 +49,9 @@ editor:
   saved: "Kit düzeni kaydedildi!"
   cancelled: "Düzenleme iptal edildi."
 
+combat:
+  blocking: "<gray>⛨ Engelliyor..."
+
 gui:
   queue:
     title: "<gradient:#FFD700:#FFA500><bold>Bir Kit Seç</bold></gradient>"
