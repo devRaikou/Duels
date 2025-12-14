@@ -317,3 +317,22 @@ tab:
     - ""
     - "<yellow>raikou.dev</yellow>"
     - ""
+
+# ==========================================
+#              CHAT FORMATTER
+# ==========================================
+# Chat formatting with LuckPerms prefix/suffix support.
+# Placeholders: %prefix%, %suffix%, %player%, %displayname%, %message%
+chat:
+  enabled: true
+  format: "%prefix%<white>%player%</white>%suffix% <dark_gray>»</dark_gray> <gray>%message%"
+  # Cooldown in seconds between messages
+  cooldown: 1.5
+  # Anti-spam settings
+  anti-spam:
+    enabled: true
+    duplicate-message-block: true
+    max-caps-percent: 70
+  # Permissions
+  color-permission: "duels.chat.color"
+  bypass-cooldown: "duels.chat.bypass"

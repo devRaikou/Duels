@@ -120,3 +120,7 @@ ping:
   ping: "  <gray>Gecikme:</gray> %quality%%ping%ms"
   signal: "  <gray>Sinyal:</gray> %bar%"
   location: "  <gray>Sunucu Konumu:</gray> <yellow>%location%</yellow>"
+
+chat:
+  cooldown: "<red>Başka bir mesaj göndermeden önce <yellow>%time% saniye</yellow> bekle."
+  duplicate: "<red>Aynı mesajı arka arkaya gönderemezsin."

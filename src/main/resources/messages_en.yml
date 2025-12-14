@@ -120,3 +120,7 @@ ping:
   ping: "  <gray>Ping:</gray> %quality%%ping%ms"
   signal: "  <gray>Signal:</gray> %bar%"
   location: "  <gray>Server Location:</gray> <yellow>%location%</yellow>"
+
+chat:
+  cooldown: "<red>Please wait <yellow>%time%s</yellow> before sending another message."
+  duplicate: "<red>You cannot send the same message twice in a row."

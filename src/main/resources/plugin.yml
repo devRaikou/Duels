@@ -1,10 +1,10 @@
 name: Duels
-version: 1.9.5
+version: 2.0.0
 main: me.raikou.duels.DuelsPlugin
 api-version: 1.21
 authors: [Raikou]
 description: Professional Duels Core Plugin
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, LuckPerms]
 commands:
   duel:
     description: Main command for Duels
@@ -26,6 +26,11 @@ commands:
     aliases: [lb, top]
 permissions:
   duels.admin:
-    description: Admin permission for Duels
+    description: Full admin access to all commands
     default: op
-
+  duels.chat.color:
+    description: Use MiniMessage colors in chat
+    default: op
+  duels.chat.bypass:
+    description: Bypass chat cooldown and anti-spam
+    default: op

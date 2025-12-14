@@ -52,6 +52,8 @@ public class DuelsPlugin extends JavaPlugin {
     private me.raikou.duels.util.BossBarManager bossBarManager;
     @Getter
     private me.raikou.duels.util.TabManager tabManager;
+    @Getter
+    private me.raikou.duels.chat.ChatManager chatManager;
 
     @Override
     public void onEnable() {
@@ -121,6 +123,9 @@ public class DuelsPlugin extends JavaPlugin {
         // BossBar & TAB
         this.bossBarManager = new me.raikou.duels.util.BossBarManager(this);
         this.tabManager = new me.raikou.duels.util.TabManager(this);
+
+        // Chat Formatter
+        this.chatManager = new me.raikou.duels.chat.ChatManager(this);
 
         getLogger().info("Duels Core Plugin has been enabled!");
     }
