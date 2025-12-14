@@ -172,23 +172,20 @@ public class MatchResultGui implements Listener {
         List<Component> lore = new ArrayList<>();
         lore.add(Component.empty());
 
-        // Kit info
-        lore.add(Component.text("Kit: ").color(NamedTextColor.GRAY)
-                .append(Component.text(result.getKitName()).color(NamedTextColor.AQUA))
-                .decoration(TextDecoration.ITALIC, false));
-
-        // Type
+        // Get type text for replacement
         String typeText = result.isRanked()
                 ? MessageUtil.getString("gui.match-result.ranked")
                 : MessageUtil.getString("gui.match-result.unranked");
-        lore.add(Component.text("Type: ").color(NamedTextColor.GRAY)
-                .append(MessageUtil.parse(typeText))
-                .decoration(TextDecoration.ITALIC, false));
 
-        // Duration
-        lore.add(Component.text("Duration: ").color(NamedTextColor.GRAY)
-                .append(Component.text(result.getFormattedDuration()).color(NamedTextColor.WHITE))
-                .decoration(TextDecoration.ITALIC, false));
+        // Use localized lore from config
+        List<String> matchInfoLore = MessageUtil.getStringList("gui.match-result.match-info-lore");
+        for (String line : matchInfoLore) {
+            String processed = line
+                    .replace("%kit%", result.getKitName())
+                    .replace("%type%", typeText)
+                    .replace("%duration%", result.getFormattedDuration());
+            lore.add(MessageUtil.parse(processed).decoration(TextDecoration.ITALIC, false));
+        }
 
         lore.add(Component.empty());
 

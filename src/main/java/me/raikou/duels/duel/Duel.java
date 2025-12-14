@@ -142,11 +142,17 @@ public class Duel {
         player.setWalkSpeed(0f);
         player.setFlySpeed(0f);
 
-        // Add slowness and jump boost effects to prevent any movement
+        // Add slowness to prevent movement (high amplifier)
         player.addPotionEffect(new org.bukkit.potion.PotionEffect(
                 org.bukkit.potion.PotionEffectType.SLOWNESS, 200, 255, false, false, false));
+
+        // Use JUMP_BOOST with amplifier 128+ to give negative jump (prevents jumping)
+        // Amplifier 128 = -1 jump boost, 129 = -2, etc.
         player.addPotionEffect(new org.bukkit.potion.PotionEffect(
-                org.bukkit.potion.PotionEffectType.JUMP_BOOST, 200, 250, false, false, false));
+                org.bukkit.potion.PotionEffectType.JUMP_BOOST, 200, 128, false, false, false));
+
+        // Lock player in place by setting velocity to zero
+        player.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
     }
 
     /**
@@ -160,6 +166,9 @@ public class Duel {
         // Remove freeze effects
         player.removePotionEffect(org.bukkit.potion.PotionEffectType.SLOWNESS);
         player.removePotionEffect(org.bukkit.potion.PotionEffectType.JUMP_BOOST);
+
+        // Reset velocity
+        player.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
     }
 
     // reset logic
