@@ -157,6 +157,9 @@ public class DuelsPlugin extends JavaPlugin {
         this.matchHistoryManager = new me.raikou.duels.match.MatchHistoryManager(this);
         this.matchResultGui = new me.raikou.duels.match.MatchResultGui(this);
 
+        // Lobby Double Jump
+        new me.raikou.duels.lobby.DoubleJumpHandler(this);
+
         getLogger().info("Duels Core Plugin has been enabled!");
     }
 

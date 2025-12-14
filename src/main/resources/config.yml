@@ -70,6 +70,20 @@ anticheat:
       enabled: true
       max-violations: 10
 
+# ==========================================
+#            LOBBY SETTINGS
+# ==========================================
+lobby:
+  double-jump:
+    # Enable double-jump in lobby
+    enabled: true
+    # Horizontal velocity multiplier (forward push)
+    horizontal-multiplier: 1.2
+    # Vertical velocity multiplier (upward push)
+    vertical-multiplier: 0.8
+    # Cooldown between double jumps in milliseconds
+    cooldown-ms: 500
+
 storage:
   # Type of storage: 'mysql' or 'sqlite'
   # sqlite: Using local file (database.db) in plugin folder. No setup required.
