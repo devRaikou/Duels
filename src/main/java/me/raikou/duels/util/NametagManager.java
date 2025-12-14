@@ -13,7 +13,8 @@ import org.bukkit.scoreboard.Team;
 import java.util.UUID;
 
 /**
- * Manages nametags with health display during duels.
+ * Manages nametags with health display during duels using scoreboard teams.
+ * Health is shown next to player name as suffix.
  */
 public class NametagManager {
 
@@ -25,7 +26,6 @@ public class NametagManager {
     }
 
     private void startUpdater() {
-        // Update nametags every 5 ticks (0.25 seconds) for smooth updates
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -42,10 +42,14 @@ public class NametagManager {
     }
 
     /**
-     * Update nametag to show health during duel
+     * Update nametag to show opponent's health as suffix
      */
     private void updateNametagForDuel(Player player, Duel duel) {
         Scoreboard board = player.getScoreboard();
+        if (board == Bukkit.getScoreboardManager().getMainScoreboard()) {
+            board = Bukkit.getScoreboardManager().getNewScoreboard();
+            player.setScoreboard(board);
+        }
 
         // Get opponent
         Player opponent = null;
@@ -59,8 +63,8 @@ public class NametagManager {
         if (opponent == null)
             return;
 
-        // Create/update team for opponent to show their health
-        String teamName = "duel_" + player.getName().substring(0, Math.min(player.getName().length(), 8));
+        // Create/update team for opponent
+        String teamName = "hp_" + opponent.getName().substring(0, Math.min(opponent.getName().length(), 12));
         Team team = board.getTeam(teamName);
         if (team == null) {
             team = board.registerNewTeam(teamName);
@@ -71,13 +75,11 @@ public class NametagManager {
             team.addEntry(opponent.getName());
         }
 
-        // Set suffix with health
-        double health = opponent.getHealth();
-
-        // Create colored health display
+        // Set suffix with health: "17 ❤"
+        int health = (int) Math.ceil(opponent.getHealth());
         Component suffix = Component.text(" ")
-                .append(Component.text("❤ ", NamedTextColor.RED))
-                .append(Component.text(String.format("%.1f", health), getHealthColor(health)));
+                .append(Component.text(String.valueOf(health), getHealthColor(opponent.getHealth())))
+                .append(Component.text(" ❤", NamedTextColor.RED));
 
         team.suffix(suffix);
     }
@@ -97,10 +99,16 @@ public class NametagManager {
      */
     private void clearNametag(Player player) {
         Scoreboard board = player.getScoreboard();
-        String teamName = "duel_" + player.getName().substring(0, Math.min(player.getName().length(), 8));
-        Team team = board.getTeam(teamName);
-        if (team != null) {
-            team.unregister();
+        for (Team team : board.getTeams()) {
+            if (team.getName().startsWith("hp_")) {
+                team.unregister();
+            }
+        }
+    }
+
+    public void cleanup() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            clearNametag(player);
         }
     }
 }
