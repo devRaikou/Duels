@@ -70,7 +70,7 @@ public class ArenaManager {
     public Arena getAvailableArena() {
         List<Arena> available = new ArrayList<>();
         for (Arena arena : arenas.values()) {
-            if (arena.getState() == ArenaState.WAITING && arena.isSetup()) {
+            if (arena.isSetup()) {
                 available.add(arena);
             }
         }

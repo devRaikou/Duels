@@ -26,6 +26,17 @@ public class DuelManager {
             return;
         }
 
+        // Create Instance World
+        String instanceName = "duel_" + arena.getName() + "_" + UUID.randomUUID().toString().split("-")[0];
+        org.bukkit.World instanceWorld = plugin.getWorldManager()
+                .createDuelWorld(arena.getSpawn1().getWorld().getName(), instanceName);
+
+        if (instanceWorld == null) {
+            p1.sendMessage("Failed to create duel world!");
+            p2.sendMessage("Failed to create duel world!");
+            return;
+        }
+
         List<UUID> players = Arrays.asList(p1.getUniqueId(), p2.getUniqueId());
 
         // Give Kits with layout check
@@ -35,7 +46,8 @@ public class DuelManager {
             applyKit(p2, kit, kitName);
         }
 
-        Duel duel = new Duel(plugin, arena, players);
+        // Create duel with new instance world context
+        Duel duel = new Duel(plugin, arena, players, instanceWorld);
 
         activeDuels.add(duel);
         playerDuelMap.put(p1.getUniqueId(), duel);

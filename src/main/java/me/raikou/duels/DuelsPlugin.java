@@ -29,6 +29,8 @@ public class DuelsPlugin extends JavaPlugin {
     private me.raikou.duels.stats.StatsManager statsManager;
     @Getter
     private me.raikou.duels.editor.KitEditorManager kitEditorManager;
+    @Getter
+    private me.raikou.duels.world.WorldManager worldManager;
 
     @Override
     public void onEnable() {
@@ -47,6 +49,7 @@ public class DuelsPlugin extends JavaPlugin {
         this.guiManager = new me.raikou.duels.gui.GuiManager(this);
         this.statsManager = new me.raikou.duels.stats.StatsManager(this);
         this.kitEditorManager = new me.raikou.duels.editor.KitEditorManager(this);
+        this.worldManager = new me.raikou.duels.world.WorldManager(this);
 
         // Storage
         String type = getConfig().getString("storage.type", "sqlite");
