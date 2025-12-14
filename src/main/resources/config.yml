@@ -18,6 +18,24 @@ combat:
   # Enable 1.8 legacy PvP mechanics (no attack cooldown, no sweep attacks)
   legacy-pvp: true
 
+# ==========================================
+#            ANTI-CHEAT
+# ==========================================
+anticheat:
+  enabled: true
+  # Action when max violations reached: kick, ban, notify
+  action: notify
+  checks:
+    flight:
+      enabled: true
+      max-violations: 5
+    killaura:
+      enabled: true
+      max-violations: 8
+    reach:
+      enabled: true
+      max-violations: 10
+
 storage:
   # Type of storage: 'mysql' or 'sqlite'
   # sqlite: Using local file (database.db) in plugin folder. No setup required.

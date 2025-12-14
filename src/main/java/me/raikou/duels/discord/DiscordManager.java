@@ -73,4 +73,14 @@ public class DiscordManager {
 
         logger.log("Player Left", player.getName() + " has left the server.", Color.RED, null);
     }
+
+    /**
+     * Send a custom embed (used by AntiCheat)
+     */
+    public void sendEmbed(String title, String description, int color) {
+        if (!plugin.getConfig().getBoolean("discord.enabled", false))
+            return;
+
+        logger.log(title, description, new Color(color), null);
+    }
 }

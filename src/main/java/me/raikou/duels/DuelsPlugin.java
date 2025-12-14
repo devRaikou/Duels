@@ -42,6 +42,8 @@ public class DuelsPlugin extends JavaPlugin {
     private me.raikou.duels.util.NametagManager nametagManager;
     @Getter
     private me.raikou.duels.util.CPSManager cpsManager;
+    @Getter
+    private me.raikou.duels.anticheat.AntiCheatManager antiCheatManager;
 
     @Override
     public void onEnable() {
@@ -93,6 +95,9 @@ public class DuelsPlugin extends JavaPlugin {
         this.cpsManager = new me.raikou.duels.util.CPSManager(this);
         new me.raikou.duels.util.BoardManager(this);
         this.nametagManager = new me.raikou.duels.util.NametagManager(this);
+
+        // Anti-Cheat
+        this.antiCheatManager = new me.raikou.duels.anticheat.AntiCheatManager(this);
 
         getLogger().info("Duels Core Plugin has been enabled!");
     }
