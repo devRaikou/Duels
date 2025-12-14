@@ -63,6 +63,22 @@ gui:
   editor:
     title: "<gradient:#00AAFF:#00FFFF><bold>Kit Editor</bold></gradient>"
     save-button: "<green><bold>SAVE & EXIT</bold>"
+  leaderboard:
+    title: "<gradient:#FFD700:#FFA500><bold>Leaderboard</bold></gradient>"
+    rank-1: "<gold><bold>#1</bold></gold> <yellow>%player%"
+    rank-2: "<gray><bold>#2</bold></gray> <yellow>%player%"
+    rank-3: "<#CD7F32><bold>#3</bold></#CD7F32> <yellow>%player%"
+    rank-default: "<white>#%rank%</white> <yellow>%player%"
+    wins: "<gray>Wins: <green>%amount%"
+    losses: "<gray>Losses: <red>%amount%"
+    kills: "<gray>Kills: <aqua>%amount%"
+    deaths: "<gray>Deaths: <dark_red>%amount%"
+    winrate: "<gray>Win Rate: <yellow>%rate%"
+    kd: "<gray>K/D: <yellow>%ratio%"
+    info-title: "<yellow>Leaderboard Info"
+    info-lore:
+      - "<gray>Updates every <white>%duration%<gray> seconds"
+      - "<gray>Showing top <white>%count%<gray> players"
 
 titles:
   duel-start:

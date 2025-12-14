@@ -63,6 +63,22 @@ gui:
   editor:
     title: "<gradient:#00AAFF:#00FFFF><bold>Kit Düzenleyici</bold></gradient>"
     save-button: "<green><bold>KAYDET & ÇIK</bold>"
+  leaderboard:
+    title: "<gradient:#FFD700:#FFA500><bold>Lider Tablosu</bold></gradient>"
+    rank-1: "<gold><bold>#1</bold></gold> <yellow>%player%"
+    rank-2: "<gray><bold>#2</bold></gray> <yellow>%player%"
+    rank-3: "<#CD7F32><bold>#3</bold></#CD7F32> <yellow>%player%"
+    rank-default: "<white>#%rank%</white> <yellow>%player%"
+    wins: "<gray>Zafer: <green>%amount%"
+    losses: "<gray>Yenilgi: <red>%amount%"
+    kills: "<gray>Öldürme: <aqua>%amount%"
+    deaths: "<gray>Ölme: <dark_red>%amount%"
+    winrate: "<gray>Kazanma Oranı: <yellow>%rate%"
+    kd: "<gray>K/D: <yellow>%ratio%"
+    info-title: "<yellow>Lider Tablosu Bilgisi"
+    info-lore:
+      - "<gray>Her <white>%duration%<gray> saniyede güncellenir"
+      - "<gray>En iyi <white>%count%<gray> oyuncu gösteriliyor"
 
 titles:
   duel-start:

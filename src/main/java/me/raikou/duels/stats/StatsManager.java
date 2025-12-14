@@ -26,8 +26,8 @@ public class StatsManager {
     public void saveStats(Player player) {
         PlayerStats stats = statsCache.get(player.getUniqueId());
         if (stats != null) {
-            plugin.getStorage().saveUser(player.getUniqueId(), stats.getWins(), stats.getLosses(), stats.getKills(),
-                    stats.getDeaths());
+            plugin.getStorage().saveUser(player.getUniqueId(), player.getName(),
+                    stats.getWins(), stats.getLosses(), stats.getKills(), stats.getDeaths());
             statsCache.remove(player.getUniqueId());
         }
     }

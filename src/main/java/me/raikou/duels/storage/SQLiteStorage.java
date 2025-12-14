@@ -1,6 +1,7 @@
 package me.raikou.duels.storage;
 
 import me.raikou.duels.DuelsPlugin;
+import me.raikou.duels.leaderboard.LeaderboardEntry;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +10,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -54,14 +57,22 @@ public class SQLiteStorage implements Storage {
         try (PreparedStatement ps = connection.prepareStatement(
                 "CREATE TABLE IF NOT EXISTS duel_stats (" +
                         "uuid VARCHAR(36) PRIMARY KEY, " +
+                        "name VARCHAR(32) DEFAULT '', " +
                         "wins INT DEFAULT 0, " +
                         "losses INT DEFAULT 0, " +
                         "kills INT DEFAULT 0, " +
                         "deaths INT DEFAULT 0)")) {
             ps.executeUpdate();
-            ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+
+        // Add name column if it doesn't exist (migration)
+        try (PreparedStatement ps = connection.prepareStatement(
+                "ALTER TABLE duel_stats ADD COLUMN name VARCHAR(32) DEFAULT ''")) {
+            ps.executeUpdate();
+        } catch (SQLException ignored) {
+            // Column already exists
         }
 
         try (PreparedStatement ps = connection.prepareStatement(
@@ -98,20 +109,22 @@ public class SQLiteStorage implements Storage {
     }
 
     @Override
-    public CompletableFuture<Void> saveUser(UUID uuid, int wins, int losses, int kills, int deaths) {
+    public CompletableFuture<Void> saveUser(UUID uuid, String name, int wins, int losses, int kills, int deaths) {
         return CompletableFuture.runAsync(() -> {
             try (PreparedStatement ps = connection.prepareStatement(
-                    "INSERT INTO duel_stats (uuid, wins, losses, kills, deaths) VALUES (?,?,?,?,?) " +
-                            "ON CONFLICT(uuid) DO UPDATE SET wins=?, losses=?, kills=?, deaths=?")) {
+                    "INSERT INTO duel_stats (uuid, name, wins, losses, kills, deaths) VALUES (?,?,?,?,?,?) " +
+                            "ON CONFLICT(uuid) DO UPDATE SET name=?, wins=?, losses=?, kills=?, deaths=?")) {
                 ps.setString(1, uuid.toString());
-                ps.setInt(2, wins);
-                ps.setInt(3, losses);
-                ps.setInt(4, kills);
-                ps.setInt(5, deaths);
-                ps.setInt(6, wins);
-                ps.setInt(7, losses);
-                ps.setInt(8, kills);
-                ps.setInt(9, deaths);
+                ps.setString(2, name);
+                ps.setInt(3, wins);
+                ps.setInt(4, losses);
+                ps.setInt(5, kills);
+                ps.setInt(6, deaths);
+                ps.setString(7, name);
+                ps.setInt(8, wins);
+                ps.setInt(9, losses);
+                ps.setInt(10, kills);
+                ps.setInt(11, deaths);
                 ps.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -207,6 +220,30 @@ public class SQLiteStorage implements Storage {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<LeaderboardEntry>> getTopPlayers(int limit) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<LeaderboardEntry> entries = new ArrayList<>();
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT uuid, name, wins, losses, kills, deaths FROM duel_stats ORDER BY wins DESC LIMIT ?")) {
+                ps.setInt(1, limit);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    entries.add(new LeaderboardEntry(
+                            UUID.fromString(rs.getString("uuid")),
+                            rs.getString("name"),
+                            rs.getInt("wins"),
+                            rs.getInt("losses"),
+                            rs.getInt("kills"),
+                            rs.getInt("deaths")));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return entries;
         });
     }
 }

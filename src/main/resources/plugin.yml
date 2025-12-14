@@ -4,6 +4,7 @@ main: me.raikou.duels.DuelsPlugin
 api-version: 1.21
 authors: [Raikou]
 description: Professional Duels Core Plugin
+softdepend: [PlaceholderAPI]
 commands:
   duel:
     description: Main command for Duels
@@ -19,7 +20,12 @@ commands:
   ping:
     description: View your connection info
     usage: /ping
+  leaderboard:
+    description: View the leaderboard
+    usage: /leaderboard
+    aliases: [lb, top]
 permissions:
   duels.admin:
     description: Admin permission for Duels
     default: op
+

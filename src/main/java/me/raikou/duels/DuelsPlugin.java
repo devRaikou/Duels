@@ -44,6 +44,10 @@ public class DuelsPlugin extends JavaPlugin {
     private me.raikou.duels.util.CPSManager cpsManager;
     @Getter
     private me.raikou.duels.anticheat.AntiCheatManager antiCheatManager;
+    @Getter
+    private me.raikou.duels.leaderboard.LeaderboardManager leaderboardManager;
+    @Getter
+    private me.raikou.duels.command.LeaderboardCommand leaderboardCommand;
 
     @Override
     public void onEnable() {
@@ -98,6 +102,17 @@ public class DuelsPlugin extends JavaPlugin {
 
         // Anti-Cheat
         this.antiCheatManager = new me.raikou.duels.anticheat.AntiCheatManager(this);
+
+        // Leaderboard
+        this.leaderboardManager = new me.raikou.duels.leaderboard.LeaderboardManager(this);
+        this.leaderboardCommand = new me.raikou.duels.command.LeaderboardCommand(this);
+        getCommand("leaderboard").setExecutor(leaderboardCommand);
+
+        // PlaceholderAPI Hook
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new me.raikou.duels.placeholder.DuelsExpansion(this).register();
+            getLogger().info("PlaceholderAPI hooked successfully!");
+        }
 
         getLogger().info("Duels Core Plugin has been enabled!");
     }

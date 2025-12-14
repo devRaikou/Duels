@@ -69,6 +69,11 @@ public class DuelListener implements Listener {
                     plugin.getQueueManager().removeFromQueue(event.getPlayer());
                     event.setCancelled(true);
                 }
+                // Leaderboard - Knowledge Book
+                else if (item.getType() == org.bukkit.Material.KNOWLEDGE_BOOK && plainName.contains("Leaderboard")) {
+                    plugin.getLeaderboardCommand().openLeaderboardGui(event.getPlayer());
+                    event.setCancelled(true);
+                }
             }
         }
     }

@@ -105,9 +105,21 @@ public class LobbyManager {
             editor.setItemMeta(editorMeta);
         }
 
+        // Leaderboard - Knowledge Book
+        org.bukkit.inventory.ItemStack leaderboard = new org.bukkit.inventory.ItemStack(
+                org.bukkit.Material.KNOWLEDGE_BOOK);
+        org.bukkit.inventory.meta.ItemMeta lbMeta = leaderboard.getItemMeta();
+        if (lbMeta != null) {
+            lbMeta.displayName(
+                    me.raikou.duels.util.MessageUtil
+                            .parse("<gold><bold>Leaderboard</bold></gold> <gray>(Right Click)"));
+            leaderboard.setItemMeta(lbMeta);
+        }
+
         player.getInventory().setItem(0, unrankedItem);
         player.getInventory().setItem(1, rankedItem);
         player.getInventory().setItem(4, editor);
+        player.getInventory().setItem(8, leaderboard);
         player.setHealth(20);
         player.setFoodLevel(20);
         player.setGameMode(org.bukkit.GameMode.ADVENTURE);

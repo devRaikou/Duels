@@ -1,5 +1,8 @@
 package me.raikou.duels.storage;
 
+import me.raikou.duels.leaderboard.LeaderboardEntry;
+
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -9,7 +12,7 @@ public interface Storage {
 
     void disconnect();
 
-    CompletableFuture<Void> saveUser(UUID uuid, int wins, int losses, int kills, int deaths);
+    CompletableFuture<Void> saveUser(UUID uuid, String name, int wins, int losses, int kills, int deaths);
 
     // Returns array: [wins, losses, kills, deaths]
     CompletableFuture<int[]> loadUser(UUID uuid);
@@ -23,4 +26,7 @@ public interface Storage {
     CompletableFuture<Integer> loadElo(UUID uuid, String kitName);
 
     CompletableFuture<Void> saveElo(UUID uuid, String kitName, int elo);
+
+    // Leaderboard - returns top players sorted by wins DESC
+    CompletableFuture<List<LeaderboardEntry>> getTopPlayers(int limit);
 }

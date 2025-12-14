@@ -86,17 +86,6 @@ arenas:
 # Kits can be created via in-game command:
 # /duel admin kit create <name> (Will copy your current inventory)
 kits:
-  default:
-    icon: DIAMOND_SWORD
-    items:
-    - DIAMOND_SWORD:1
-    - GOLDEN_APPLE:5
-    armor:
-      helmet: DIAMOND_HELMET:1
-      chestplate: DIAMOND_CHESTPLATE:1
-      leggings: DIAMOND_LEGGINGS:1
-      boots: DIAMOND_BOOTS:1
-
   SG:
     icon: IRON_SWORD
     items:
@@ -112,8 +101,6 @@ kits:
       chestplate: IRON_CHESTPLATE:1
       leggings: IRON_LEGGINGS:1
       boots: IRON_BOOTS:1
-
-  # --- DUEL / ARENA KITS ---
 
   NoDebuff:
     icon: SPLASH_POTION
@@ -282,3 +269,14 @@ ranked:
   elo-gain-base: 25         # ELO gained on win
   elo-loss-base: 25         # ELO lost on loss
 
+# ==========================================
+#              LEADERBOARD
+# ==========================================
+# Leaderboard system with PlaceholderAPI support.
+# Available placeholders (for DecentHolograms etc):
+# %duels_top_1_name%, %duels_top_1_wins%, %duels_top_1_losses%
+# %duels_top_1_kills%, %duels_top_1_deaths%, %duels_top_1_winrate%, %duels_top_1_kd%
+# (Supports positions 1-10)
+leaderboard:
+  cache-duration: 60    # Cache refresh interval in seconds
+  top-count: 10         # Number of top players to track
