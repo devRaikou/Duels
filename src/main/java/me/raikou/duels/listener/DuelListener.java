@@ -28,8 +28,6 @@ public class DuelListener implements Listener {
             plugin.getLobbyManager().teleportToLobby(player);
             plugin.getLobbyManager().giveLobbyItems(player);
         }
-        // Show BossBar
-        plugin.getBossBarManager().showBossBar(player);
     }
 
     @EventHandler

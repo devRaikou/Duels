@@ -197,40 +197,37 @@ lobby:
 # %opponent_elo% - Opponent ELO (Ranked only)
 # %opponent_cps% - Opponent CPS (Game only)
 scoreboard:
-  title: '<aqua><bold>Duels</bold></aqua> <dark_gray>|</dark_gray> <white>Practice</white>'
+  title: '<gradient:#6EE7F9:#38BDF8><bold>DUELS</bold></gradient> <dark_gray>|</dark_gray> <gray>Practice</gray>'
+
   lobby:
-    - ' §8§m             '
-    - '  '
-    - ' <white>Players: <aqua>%online% '
-    - ' <white>Ping: <aqua>%ping%<gray>ms '
-    - ' <white>Queue: <aqua>%queue% '
-    - '  '
-    - ' §8§m             '
-    - ' <dark_aqua>raikou.dev '
+    - ' '
+    - ' <gray>Players:</gray> <white>%online%</white>'
+    - ' <gray>Ping:</gray> <aqua>%ping%</aqua><dark_gray>ms</dark_gray>'
+    - ' <gray>Queue:</gray> <yellow>%queue%</yellow>'
+    - ' '
+    - ' <gray>%date%</gray>'
   game:
-    - ' §8§m             '
-    - '  '
-    - ' <white>Opponent: <yellow>%opponent% '
-    - '  '
-    - ' <white>Your CPS: <green>%cps% '
-    - ' <white>Enemy CPS: <red>%opponent_cps% '
-    - ' <white>Ping: <aqua>%ping%<gray>ms '
-    - '  '
-    - ' §8§m             '
-    - ' <dark_aqua>raikou.dev '
+    - ' '
+    - ' <gray>Opponent:</gray> <white>%opponent%</white>'
+    - ' '
+    - ' <gray>Your CPS:</gray> <green>%cps%</green>'
+    - ' <gray>Enemy CPS:</gray> <red>%opponent_cps%</red>'
+    - ' <gray>Ping:</gray> <aqua>%ping%</aqua><dark_gray>ms</dark_gray>'
+    - ' '
+    - ' <gray>%date%</gray>'
+
   game-ranked:
-    - ' §8§m             '
-    - ' <gold>RANKED '
-    - '  '
-    - ' <white>Opponent: <yellow>%opponent% '
-    - '  '
-    - ' <white>ELO: <yellow>%elo% <gray>vs <yellow>%opponent_elo% '
-    - ' <white>Your CPS: <green>%cps% '
-    - ' <white>Enemy CPS: <red>%opponent_cps% '
-    - ' <white>Ping: <aqua>%ping%<gray>ms '
-    - '  '
-    - ' §8§m             '
-    - ' <dark_aqua>raikou.dev '
+    - ' '
+    - ' <gold><bold>RANKED</bold></gold>'
+    - ' '
+    - ' <gray>Opponent:</gray> <white>%opponent%</white>'
+    - ' <gray>ELO:</gray> <yellow>%elo%</yellow> <dark_gray>vs</dark_gray> <yellow>%opponent_elo%</yellow>'
+    - ' '
+    - ' <gray>Your CPS:</gray> <green>%cps%</green>'
+    - ' <gray>Enemy CPS:</gray> <red>%opponent_cps%</red>'
+    - ' <gray>Ping:</gray> <aqua>%ping%</aqua><dark_gray>ms</dark_gray>'
+    - ' '
+    - ' <gray>%date%</gray>'
 # ==========================================
 #         DISCORD LOGGING
 # ==========================================
@@ -290,11 +287,11 @@ leaderboard:
 bossbar:
   enabled: true
   lobby:
-    text: "<gradient:#FFD700:#FFA500><bold>⚔</bold></gradient> <gray>Welcome to</gray> <gradient:#FFD700:#FFA500><bold>Duels</bold></gradient> <gradient:#FFD700:#FFA500><bold>⚔</bold></gradient>"
+    text: "<gray>Queue:</gray> <yellow>%queue%</yellow> <dark_gray>|</dark_gray> <gray>Status:</gray> <green>%status%</green>"
     color: YELLOW
     style: SOLID
   game:
-    text: "<red>⚔ Fighting: <white>%opponent%</white> <dark_gray>|</dark_gray> <yellow>%kit%</yellow>"
+    text: "<red>⚔</red> <white>%opponent%</white> <dark_gray>|</dark_gray> <yellow>%kit%</yellow> <dark_gray>|</dark_gray> <green>In Game</green>"
     color: RED
     style: SOLID
 
@@ -303,20 +300,29 @@ bossbar:
 # ==========================================
 # TAB list header and footer customization.
 # Placeholders: %player%, %online%, %max%, %ping%, %date%, %time%, %wins%, %losses%, %status%, %queue%
+# LuckPerms Placeholders: %prefix%, %suffix%, %group%, %group_display%
 tab:
   enabled: true
   header:
-    - ""
-    - "<gradient:#FFD700:#FFA500><bold>⚔ RAIKOU DUELS ⚔</bold></gradient>"
-    - "<gray>Practice & Competitive PvP</gray>"
-    - ""
+  - ""
+  - "<bold><gradient:#FFB347:#FFD700>RAIKOU DUELS</gradient></bold>"
+  - ""
+
   footer:
-    - ""
-    - "<gray>Players: <white>%online%/%max%</white></gray>"
-    - "<gray>Your Ping: <green>%ping%ms</green></gray>"
-    - ""
-    - "<yellow>raikou.dev</yellow>"
-    - ""
+  - "<gray>Queue:</gray> <yellow>%queue%</yellow> <dark_gray>|</dark_gray> <gray>Status:</gray> <green>%status%</green>"
+  - "<gray>Online:</gray> <white>%online%</white><dark_gray>/</dark_gray><gray>%max%</gray> <dark_gray>|</dark_gray> <green>%ping%ms</green>"
+  - "<dark_gray>raikou.dev</dark_gray>"
+  # Player list name formatting (shows in TAB player list)
+  player-list:
+    enabled: true
+    format: "%prefix%<white>%player%</white>%suffix%"
+  # Player sorting in TAB (requires LuckPerms)
+  # Groups listed first appear at the top of TAB
+  sorting:
+    enabled: true
+    group-order:
+      - admin
+      - default
 
 # ==========================================
 #              CHAT FORMATTER

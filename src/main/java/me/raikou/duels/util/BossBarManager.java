@@ -7,6 +7,10 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
@@ -16,14 +20,20 @@ import java.util.UUID;
 /**
  * Manages BossBars for players in lobby and during duels.
  */
-public class BossBarManager {
+public class BossBarManager implements Listener {
 
     private final DuelsPlugin plugin;
     private final Map<UUID, BossBar> playerBars = new HashMap<>();
 
     public BossBarManager(DuelsPlugin plugin) {
         this.plugin = plugin;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
         startUpdater();
+
+        // Show bossbar to all online players on reload
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            showBossBar(player);
+        }
     }
 
     private void startUpdater() {
@@ -34,10 +44,27 @@ public class BossBarManager {
                     return;
                 }
                 for (Player player : Bukkit.getOnlinePlayers()) {
+                    // Ensure player has bossbar
+                    if (!playerBars.containsKey(player.getUniqueId())) {
+                        showBossBar(player);
+                    }
                     updateBossBar(player);
                 }
             }
         }.runTaskTimer(plugin, 20L, 20L);
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        // Delay slightly to ensure player is fully loaded
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            showBossBar(event.getPlayer());
+        }, 5L);
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        hideBossBar(event.getPlayer());
     }
 
     public void showBossBar(Player player) {
@@ -45,16 +72,20 @@ public class BossBarManager {
             return;
         }
 
-        BossBar bar = playerBars.get(player.getUniqueId());
-        if (bar == null) {
-            bar = BossBar.bossBar(
-                    Component.text("Loading..."),
-                    1.0f,
-                    BossBar.Color.YELLOW,
-                    BossBar.Overlay.PROGRESS);
-            playerBars.put(player.getUniqueId(), bar);
-            player.showBossBar(bar);
+        // Remove existing bar first
+        BossBar existingBar = playerBars.get(player.getUniqueId());
+        if (existingBar != null) {
+            player.hideBossBar(existingBar);
         }
+
+        // Create new bar
+        BossBar bar = BossBar.bossBar(
+                Component.text("Loading..."),
+                1.0f,
+                BossBar.Color.YELLOW,
+                BossBar.Overlay.PROGRESS);
+        playerBars.put(player.getUniqueId(), bar);
+        player.showBossBar(bar);
         updateBossBar(player);
     }
 
@@ -66,6 +97,10 @@ public class BossBarManager {
     }
 
     public void updateBossBar(Player player) {
+        if (!plugin.getConfig().getBoolean("bossbar.enabled", true)) {
+            return;
+        }
+
         BossBar bar = playerBars.get(player.getUniqueId());
         if (bar == null) {
             showBossBar(player);
@@ -84,7 +119,7 @@ public class BossBarManager {
             colorStr = plugin.getConfig().getString("bossbar.game.color", "RED");
             styleStr = plugin.getConfig().getString("bossbar.game.style", "SOLID");
 
-            // Replace placeholders
+            // Replace duel-specific placeholders
             Player opponent = getOpponent(player, duel);
             text = text.replace("%opponent%", opponent != null ? opponent.getName() : "Unknown");
             text = text.replace("%kit%", duel.getKitName() != null ? duel.getKitName() : "None");
@@ -97,7 +132,7 @@ public class BossBarManager {
         }
 
         // Apply common placeholders
-        text = applyPlaceholders(text, player);
+        text = applyPlaceholders(text, player, duel);
 
         // Parse and apply
         Component textComponent = MessageUtil.parse(text);
@@ -123,10 +158,29 @@ public class BossBarManager {
         return null;
     }
 
-    private String applyPlaceholders(String text, Player player) {
+    private String applyPlaceholders(String text, Player player, Duel duel) {
         text = text.replace("%player%", player.getName());
         text = text.replace("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()));
+        text = text.replace("%max%", String.valueOf(Bukkit.getMaxPlayers()));
         text = text.replace("%date%", java.time.LocalDate.now().toString());
+        text = text.replace("%time%", java.time.LocalTime.now().format(
+                java.time.format.DateTimeFormatter.ofPattern("HH:mm")));
+
+        // Queue status
+        if (plugin.getQueueManager().isInQueue(player)) {
+            text = text.replace("%queue%", "Searching...");
+        } else {
+            text = text.replace("%queue%", "Not in queue");
+        }
+
+        // Status
+        if (duel != null) {
+            text = text.replace("%status%", "In Duel");
+        } else if (plugin.getQueueManager().isInQueue(player)) {
+            text = text.replace("%status%", "In Queue");
+        } else {
+            text = text.replace("%status%", "In Lobby");
+        }
 
         // Stats
         PlayerStats stats = plugin.getStatsManager().getStats(player);

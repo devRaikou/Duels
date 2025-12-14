@@ -13,12 +13,15 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class BoardManager {
 
     private final DuelsPlugin plugin;
+    // Cache scoreboards per player for reuse
+    private final Map<UUID, Scoreboard> playerBoards = new HashMap<>();
 
     public BoardManager(DuelsPlugin plugin) {
         this.plugin = plugin;
@@ -37,9 +40,17 @@ public class BoardManager {
     }
 
     public void updateBoard(Player player) {
+        // Get or create scoreboard for this player
         Scoreboard board = player.getScoreboard();
-        if (board.equals(Bukkit.getScoreboardManager().getMainScoreboard())) {
-            board = Bukkit.getScoreboardManager().getNewScoreboard();
+
+        // If player has main scoreboard, give them a new one
+        if (board == null || board.equals(Bukkit.getScoreboardManager().getMainScoreboard())) {
+            // Check if we have a cached board for this player
+            board = playerBoards.get(player.getUniqueId());
+            if (board == null) {
+                board = Bukkit.getScoreboardManager().getNewScoreboard();
+                playerBoards.put(player.getUniqueId(), board);
+            }
             player.setScoreboard(board);
         }
 
@@ -51,13 +62,20 @@ public class BoardManager {
         if (obj == null) {
             obj = board.registerNewObjective("sidebar", Criteria.DUMMY, titleComp);
             obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+            obj.numberFormat(NumberFormat.blank());
         } else {
             obj.displayName(titleComp);
         }
 
-        Duel duel = plugin.getDuelManager().getDuel(player);
-        java.util.List<String> lines;
+        // Clear old entries (entries set by us, leave team entries alone)
+        for (String entry : board.getEntries()) {
+            // Only reset scores, don't touch teams
+            board.resetScores(entry);
+        }
 
+        Duel duel = plugin.getDuelManager().getDuel(player);
+
+        List<String> lines;
         if (duel != null) {
             if (duel.isRanked()) {
                 lines = plugin.getConfig().getStringList("scoreboard.game-ranked");
@@ -68,15 +86,11 @@ public class BoardManager {
             lines = plugin.getConfig().getStringList("scoreboard.lobby");
         }
 
-        // Clear existing scores
-        for (String entry : board.getEntries()) {
-            board.resetScores(entry);
-        }
-
-        // Unique color codes for making duplicate lines unique
-        String[] uniqueCodes = { "§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d",
-                "§e", "§f" };
+        // Unique invisible character codes for each line
+        String[] uniqueCodes = { "§a§r", "§b§r", "§c§r", "§d§r", "§e§r", "§f§r", "§0§r", "§1§r", "§2§r", "§3§r",
+                "§4§r", "§5§r", "§6§r", "§7§r", "§8§r", "§9§r", "§k§r", "§l§r", "§m§r", "§n§r", "§o§r" };
         int uniqueIndex = 0;
+
         int score = lines.size();
 
         for (String line : lines) {
@@ -112,6 +126,9 @@ public class BoardManager {
                     int opponentElo = getOpponentElo(player, duel, kitName);
                     line = line.replace("%elo%", String.valueOf(playerElo));
                     line = line.replace("%opponent_elo%", String.valueOf(opponentElo));
+                } else {
+                    line = line.replace("%elo%", "N/A");
+                    line = line.replace("%opponent_elo%", "N/A");
                 }
             } else {
                 line = line.replace("%opponent%", "None");
@@ -163,7 +180,6 @@ public class BoardManager {
                 .replace("§d", "<light_purple>")
                 .replace("§e", "<yellow>")
                 .replace("§f", "<white>")
-                .replace("§k", "<obfuscated>")
                 .replace("§l", "<bold>")
                 .replace("§m", "<strikethrough>")
                 .replace("§n", "<underlined>")
@@ -172,17 +188,17 @@ public class BoardManager {
     }
 
     private String getOpponentName(Player player, Duel duel) {
-        for (UUID uuid : duel.getPlayers()) {
+        for (java.util.UUID uuid : duel.getPlayers()) {
             if (!uuid.equals(player.getUniqueId())) {
-                Player opp = Bukkit.getPlayer(uuid);
-                return opp != null ? opp.getName() : "Unknown";
+                Player opponent = Bukkit.getPlayer(uuid);
+                return opponent != null ? opponent.getName() : "Unknown";
             }
         }
-        return "None";
+        return "Unknown";
     }
 
-    private UUID getOpponentUUID(Player player, Duel duel) {
-        for (UUID uuid : duel.getPlayers()) {
+    private java.util.UUID getOpponentUUID(Player player, Duel duel) {
+        for (java.util.UUID uuid : duel.getPlayers()) {
             if (!uuid.equals(player.getUniqueId())) {
                 return uuid;
             }
@@ -191,11 +207,17 @@ public class BoardManager {
     }
 
     private int getOpponentElo(Player player, Duel duel, String kitName) {
-        for (UUID uuid : duel.getPlayers()) {
-            if (!uuid.equals(player.getUniqueId())) {
-                return plugin.getStorage().loadElo(uuid, kitName).join();
-            }
+        java.util.UUID opponentUUID = getOpponentUUID(player, duel);
+        if (opponentUUID != null) {
+            return plugin.getStorage().loadElo(opponentUUID, kitName).join();
         }
         return 1000;
+    }
+
+    /**
+     * Clean up player's cached scoreboard on quit
+     */
+    public void cleanup(Player player) {
+        playerBoards.remove(player.getUniqueId());
     }
 }
