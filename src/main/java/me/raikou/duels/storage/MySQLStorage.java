@@ -54,6 +54,17 @@ public class MySQLStorage implements Storage {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        try (PreparedStatement ps = connection.prepareStatement(
+                "CREATE TABLE IF NOT EXISTS kit_layouts (" +
+                        "uuid VARCHAR(36), " +
+                        "kit_name VARCHAR(64), " +
+                        "layout_data TEXT, " +
+                        "PRIMARY KEY (uuid, kit_name))")) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -106,6 +117,41 @@ public class MySQLStorage implements Storage {
                 e.printStackTrace();
             }
             return new int[] { 0, 0, 0, 0 };
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> saveKitLayout(UUID uuid, String kitName, String layoutData) {
+        return CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT INTO kit_layouts (uuid, kit_name, layout_data) VALUES (?,?,?) " +
+                            "ON DUPLICATE KEY UPDATE layout_data=?")) {
+                ps.setString(1, uuid.toString());
+                ps.setString(2, kitName);
+                ps.setString(3, layoutData);
+                ps.setString(4, layoutData);
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<String> loadKitLayout(UUID uuid, String kitName) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (PreparedStatement ps = connection
+                    .prepareStatement("SELECT layout_data FROM kit_layouts WHERE uuid=? AND kit_name=?")) {
+                ps.setString(1, uuid.toString());
+                ps.setString(2, kitName);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    return rs.getString("layout_data");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return null;
         });
     }
 }

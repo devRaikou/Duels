@@ -82,7 +82,16 @@ public class LobbyManager {
             compass.setItemMeta(meta);
         }
 
+        org.bukkit.inventory.ItemStack editor = new org.bukkit.inventory.ItemStack(org.bukkit.Material.BOOK);
+        org.bukkit.inventory.meta.ItemMeta editorMeta = editor.getItemMeta();
+        if (editorMeta != null) {
+            editorMeta.displayName(
+                    me.raikou.duels.util.MessageUtil.parse("<aqua><bold>Kit Editor</bold> <gray>(Right Click)"));
+            editor.setItemMeta(editorMeta);
+        }
+
         player.getInventory().setItem(0, compass);
+        player.getInventory().setItem(4, editor);
         player.setHealth(20);
         player.setFoodLevel(20);
         player.setGameMode(org.bukkit.GameMode.ADVENTURE);

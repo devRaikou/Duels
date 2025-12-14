@@ -44,11 +44,21 @@ public class DuelListener implements Listener {
     public void onInteract(org.bukkit.event.player.PlayerInteractEvent event) {
         if (event.getAction().name().contains("RIGHT")) {
             org.bukkit.inventory.ItemStack item = event.getItem();
-            if (item != null && item.getType() == org.bukkit.Material.COMPASS) {
-                if (item.getItemMeta().displayName() != null) {
-                    // Start GUI
-                    plugin.getGuiManager().openQueueGui(event.getPlayer());
-                    event.setCancelled(true);
+            if (item != null) {
+                if (item.getType() == org.bukkit.Material.COMPASS) {
+                    if (item.getItemMeta().displayName() != null) {
+                        plugin.getGuiManager().openQueueGui(event.getPlayer());
+                        event.setCancelled(true);
+                    }
+                } else if (item.getType() == org.bukkit.Material.BOOK) {
+                    if (item.getItemMeta().displayName() != null) {
+                        String plainName = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+                                .plainText().serialize(item.getItemMeta().displayName());
+                        if (plainName.contains("Kit Editor")) {
+                            plugin.getKitEditorManager().openEditorSelectionGui(event.getPlayer());
+                            event.setCancelled(true);
+                        }
+                    }
                 }
             }
         }
@@ -59,6 +69,7 @@ public class DuelListener implements Listener {
         Player player = event.getPlayer();
         plugin.getStatsManager().saveStats(player);
         plugin.getQueueManager().removeFromQueue(player);
+        plugin.getKitEditorManager().cancelEditing(player);
 
         Duel duel = plugin.getDuelManager().getDuel(player);
         if (duel != null) {
