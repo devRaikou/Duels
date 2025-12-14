@@ -107,11 +107,13 @@ lobby:
 # %date%      - Current Date
 # %online%    - Players Online
 # %ping%      - Player Ping (ms)
+# %cps%       - Clicks Per Second
 # %queue%     - "Yes"/"No" if player is in queue
 # %opponent%  - Opponent Name (Game only)
 # %map%       - Arena Name (Game only)
 # %elo%       - Your ELO (Ranked only)
 # %opponent_elo% - Opponent ELO (Ranked only)
+# %opponent_cps% - Opponent CPS (Game only)
 scoreboard:
   title: '<aqua><bold>Duels</bold></aqua> <dark_gray>|</dark_gray> <white>Practice</white>'
   lobby:
@@ -126,10 +128,11 @@ scoreboard:
   game:
     - ' §8§m             '
     - '  '
-    - ' <white>Opponent: '
-    - ' <yellow>%opponent% '
+    - ' <white>Opponent: <yellow>%opponent% '
     - '  '
-    - ' <white>Arena: <green>%map% '
+    - ' <white>Your CPS: <green>%cps% '
+    - ' <white>Enemy CPS: <red>%opponent_cps% '
+    - ' <white>Ping: <aqua>%ping%<gray>ms '
     - '  '
     - ' §8§m             '
     - ' <dark_aqua>raikou.dev '
@@ -137,11 +140,12 @@ scoreboard:
     - ' §8§m             '
     - ' <gold>RANKED '
     - '  '
-    - ' <white>Opponent: '
-    - ' <yellow>%opponent% <gray>[%opponent_elo%] '
+    - ' <white>Opponent: <yellow>%opponent% '
     - '  '
-    - ' <white>ELO: <yellow>%elo% '
-    - ' <white>Arena: <green>%map% '
+    - ' <white>ELO: <yellow>%elo% <gray>vs <yellow>%opponent_elo% '
+    - ' <white>Your CPS: <green>%cps% '
+    - ' <white>Enemy CPS: <red>%opponent_cps% '
+    - ' <white>Ping: <aqua>%ping%<gray>ms '
     - '  '
     - ' §8§m             '
     - ' <dark_aqua>raikou.dev '

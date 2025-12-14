@@ -38,6 +38,10 @@ public class DuelsPlugin extends JavaPlugin {
     private LanguageManager languageManager;
     @Getter
     private me.raikou.duels.manager.RequestManager requestManager;
+    @Getter
+    private me.raikou.duels.util.NametagManager nametagManager;
+    @Getter
+    private me.raikou.duels.util.CPSManager cpsManager;
 
     @Override
     public void onEnable() {
@@ -85,8 +89,10 @@ public class DuelsPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new me.raikou.duels.listener.WorldListener(this), this);
         getServer().getPluginManager().registerEvents(new me.raikou.duels.listener.CombatListener(this), this);
 
-        // Scoreboard
+        // Scoreboard & Nametags & CPS
+        this.cpsManager = new me.raikou.duels.util.CPSManager(this);
         new me.raikou.duels.util.BoardManager(this);
+        this.nametagManager = new me.raikou.duels.util.NametagManager(this);
 
         getLogger().info("Duels Core Plugin has been enabled!");
     }

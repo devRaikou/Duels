@@ -86,9 +86,24 @@ public class BoardManager {
             line = line.replace("%queue%", plugin.getQueueManager().isInQueue(player) ? "Yes" : "No");
             line = line.replace("%ping%", String.valueOf(player.getPing()));
 
+            // CPS - requires CPSManager
+            if (plugin.getCpsManager() != null) {
+                line = line.replace("%cps%", String.valueOf(plugin.getCpsManager().getCPS(player)));
+            } else {
+                line = line.replace("%cps%", "0");
+            }
+
             if (duel != null) {
                 line = line.replace("%opponent%", getOpponentName(player, duel));
                 line = line.replace("%map%", duel.getArena().getName());
+
+                // Opponent CPS
+                java.util.UUID opponentUUID = getOpponentUUID(player, duel);
+                if (opponentUUID != null && plugin.getCpsManager() != null) {
+                    line = line.replace("%opponent_cps%", String.valueOf(plugin.getCpsManager().getCPS(opponentUUID)));
+                } else {
+                    line = line.replace("%opponent_cps%", "0");
+                }
 
                 // ELO placeholders for ranked
                 if (duel.isRanked()) {
@@ -103,6 +118,7 @@ public class BoardManager {
                 line = line.replace("%map%", "None");
                 line = line.replace("%elo%", "N/A");
                 line = line.replace("%opponent_elo%", "N/A");
+                line = line.replace("%opponent_cps%", "0");
             }
 
             // Handle the line - check if it's a legacy color code line or MiniMessage
@@ -163,6 +179,15 @@ public class BoardManager {
             }
         }
         return "None";
+    }
+
+    private UUID getOpponentUUID(Player player, Duel duel) {
+        for (UUID uuid : duel.getPlayers()) {
+            if (!uuid.equals(player.getUniqueId())) {
+                return uuid;
+            }
+        }
+        return null;
     }
 
     private int getOpponentElo(Player player, Duel duel, String kitName) {
