@@ -17,6 +17,9 @@ public class QueueManager {
     // Ranked queue: KitName -> List of RankedQueueEntry
     private final Map<String, List<RankedQueueEntry>> rankedQueues = new ConcurrentHashMap<>();
 
+    // Queue join times for XP bar display
+    private final Map<UUID, Long> queueJoinTimes = new ConcurrentHashMap<>();
+
     // Config values
     private int eloRangeInitial = 100;
     private int eloRangeExpansion = 50;
@@ -29,6 +32,7 @@ public class QueueManager {
         }
         loadConfig();
         startRankedMatchmakingTask();
+        startQueueTimerTask();
     }
 
     private void loadConfig() {
@@ -55,6 +59,8 @@ public class QueueManager {
         }
 
         queues.get(type).computeIfAbsent(kitName, k -> new LinkedList<>()).add(player.getUniqueId());
+        queueJoinTimes.put(player.getUniqueId(), System.currentTimeMillis());
+
         me.raikou.duels.util.MessageUtil.sendSuccess(player, "queue.join", "%kit%", kitName, "%type%", type.name());
         me.raikou.duels.util.MessageUtil.sendInfo(player, "queue.info", "%count%",
                 String.valueOf(queues.get(type).get(kitName).size()), "%required%",
@@ -69,6 +75,7 @@ public class QueueManager {
         plugin.getStorage().loadElo(player.getUniqueId(), kitName).thenAccept(elo -> {
             RankedQueueEntry entry = new RankedQueueEntry(player.getUniqueId(), kitName, elo);
             rankedQueues.computeIfAbsent(kitName, k -> Collections.synchronizedList(new ArrayList<>())).add(entry);
+            queueJoinTimes.put(player.getUniqueId(), System.currentTimeMillis());
 
             Bukkit.getScheduler().runTask(plugin, () -> {
                 me.raikou.duels.util.MessageUtil.sendSuccess(player, "queue.join", "%kit%", kitName, "%type%",
@@ -86,6 +93,8 @@ public class QueueManager {
                 continue;
             for (List<UUID> list : queues.get(type).values()) {
                 if (list.remove(player.getUniqueId())) {
+                    queueJoinTimes.remove(player.getUniqueId());
+                    resetPlayerXP(player);
                     me.raikou.duels.util.MessageUtil.sendSuccess(player, "queue.leave");
                     restoreLobbyItems(player);
                     return;
@@ -96,6 +105,8 @@ public class QueueManager {
         // Remove from ranked queues
         for (List<RankedQueueEntry> entries : rankedQueues.values()) {
             if (entries.removeIf(e -> e.getPlayer().equals(player.getUniqueId()))) {
+                queueJoinTimes.remove(player.getUniqueId());
+                resetPlayerXP(player);
                 me.raikou.duels.util.MessageUtil.sendSuccess(player, "queue.leave");
                 restoreLobbyItems(player);
                 return;
@@ -116,10 +127,16 @@ public class QueueManager {
                 UUID uuid2 = queue.poll();
 
                 if (uuid1 != null && uuid2 != null) {
+                    // Remove from timer tracking
+                    queueJoinTimes.remove(uuid1);
+                    queueJoinTimes.remove(uuid2);
+
                     Player p1 = Bukkit.getPlayer(uuid1);
                     Player p2 = Bukkit.getPlayer(uuid2);
 
                     if (p1 != null && p2 != null) {
+                        resetPlayerXP(p1);
+                        resetPlayerXP(p2);
                         plugin.getDuelManager().startDuel(p1, p2, kitName, false);
                     } else {
                         if (p1 != null)
@@ -139,6 +156,38 @@ public class QueueManager {
                 checkRankedQueues();
             }
         }.runTaskTimer(plugin, 20L, 20L); // Every second
+    }
+
+    /**
+     * Task to update XP bar for players in queue showing wait time.
+     */
+    private void startQueueTimerTask() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Map.Entry<UUID, Long> entry : queueJoinTimes.entrySet()) {
+                    Player player = Bukkit.getPlayer(entry.getKey());
+                    if (player != null && player.isOnline()) {
+                        long waitTimeSeconds = (System.currentTimeMillis() - entry.getValue()) / 1000;
+
+                        // Set level to show seconds waited
+                        player.setLevel((int) waitTimeSeconds);
+
+                        // Set XP bar progress (cycles every 60 seconds for visual effect)
+                        float progress = (waitTimeSeconds % 60) / 60.0f;
+                        player.setExp(progress);
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 10L, 10L); // Every 0.5 seconds for smooth animation
+    }
+
+    /**
+     * Reset player XP and level when leaving queue.
+     */
+    private void resetPlayerXP(Player player) {
+        player.setLevel(0);
+        player.setExp(0);
     }
 
     private void checkRankedQueues() {
@@ -162,10 +211,16 @@ public class QueueManager {
                     queue.remove(e1);
                     queue.remove(e2);
 
+                    // Remove from timer tracking
+                    queueJoinTimes.remove(e1.getPlayer());
+                    queueJoinTimes.remove(e2.getPlayer());
+
                     Player p1 = Bukkit.getPlayer(e1.getPlayer());
                     Player p2 = Bukkit.getPlayer(e2.getPlayer());
 
                     if (p1 != null && p2 != null) {
+                        resetPlayerXP(p1);
+                        resetPlayerXP(p2);
                         plugin.getDuelManager().startDuel(p1, p2, kitName, true);
                     }
                     break; // Only one match per tick to be safe
@@ -221,5 +276,15 @@ public class QueueManager {
 
     private void restoreLobbyItems(Player player) {
         plugin.getLobbyManager().giveLobbyItems(player);
+    }
+
+    /**
+     * Get the wait time for a player in queue (in seconds).
+     */
+    public long getQueueWaitTime(UUID uuid) {
+        Long joinTime = queueJoinTimes.get(uuid);
+        if (joinTime == null)
+            return 0;
+        return (System.currentTimeMillis() - joinTime) / 1000;
     }
 }
