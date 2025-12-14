@@ -112,6 +112,13 @@ lobby:
 #             SCOREBOARD
 # ==========================================
 # Use MiniMessage format <red>, <gradient:red:blue>, etc.
+# Placeholders:
+# %date%      - Current Date
+# %online%    - Players Online
+# %ping%      - Player Ping (ms)
+# %queue%     - "Yes"/"No" if player is in queue
+# %opponent%  - Opponent Name (Game only)
+# %map%       - Arena Name (Game only)
 scoreboard:
   title: <bold><gradient:#FFD700:#FFA500> DUELS </gradient></bold>
   lobby:

@@ -77,6 +77,7 @@ public class BoardManager {
             line = line.replace("%date%", java.time.LocalDate.now().toString());
             line = line.replace("%online%", String.valueOf(Bukkit.getOnlinePlayers().size()));
             line = line.replace("%queue%", plugin.getQueueManager().isInQueue(player) ? "Yes" : "No");
+            line = line.replace("%ping%", String.valueOf(player.getPing()));
 
             if (duel != null) {
                 line = line.replace("%opponent%", getOpponentName(player, duel));
