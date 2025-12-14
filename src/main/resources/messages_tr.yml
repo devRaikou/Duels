@@ -94,3 +94,10 @@ ranked:
   elo-gain: "<green>+%amount% ELO</green> <gray>(Yeni: <gold>%elo%</gold>)</gray>"
   elo-loss: "<red>-%amount% ELO</red> <gray>(Yeni: <gold>%elo%</gold>)</gray>"
   opponent-elo: "<gray>Rakip ELO: <yellow>%elo%</yellow>"
+
+ping:
+  header: "<gradient:#00AAFF:#00FFFF><bold>  BAĞLANTI BİLGİSİ</bold></gradient>"
+  divider: "<dark_gray><strikethrough>                              </strikethrough></dark_gray>"
+  ping: "  <gray>Gecikme:</gray> %quality%%ping%ms"
+  signal: "  <gray>Sinyal:</gray> %bar%"
+  location: "  <gray>Sunucu Konumu:</gray> <yellow>%location%</yellow>"

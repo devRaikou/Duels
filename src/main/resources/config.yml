@@ -7,6 +7,10 @@ settings:
   debug: false # Enable debug messages in console
   language: en # Language code (en, tr)
 
+# Server info displayed in /ping command
+server:
+  location: "Ankara, Turkey"
+
 storage:
   # Type of storage: 'mysql' or 'sqlite'
   # sqlite: Using local file (database.db) in plugin folder. No setup required.

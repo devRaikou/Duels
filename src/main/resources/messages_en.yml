@@ -94,3 +94,10 @@ ranked:
   elo-gain: "<green>+%amount% ELO</green> <gray>(New: <gold>%elo%</gold>)</gray>"
   elo-loss: "<red>-%amount% ELO</red> <gray>(New: <gold>%elo%</gold>)</gray>"
   opponent-elo: "<gray>Opponent ELO: <yellow>%elo%</yellow>"
+
+ping:
+  header: "<gradient:#00AAFF:#00FFFF><bold>  CONNECTION INFO</bold></gradient>"
+  divider: "<dark_gray><strikethrough>                              </strikethrough></dark_gray>"
+  ping: "  <gray>Ping:</gray> %quality%%ping%ms"
+  signal: "  <gray>Signal:</gray> %bar%"
+  location: "  <gray>Server Location:</gray> <yellow>%location%</yellow>"

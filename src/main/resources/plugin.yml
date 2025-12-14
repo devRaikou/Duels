@@ -16,6 +16,9 @@ commands:
   stats:
     description: View player statistics
     usage: /stats [player]
+  ping:
+    description: View your connection info
+    usage: /ping
 permissions:
   duels.admin:
     description: Admin permission for Duels

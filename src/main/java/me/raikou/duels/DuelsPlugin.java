@@ -77,6 +77,7 @@ public class DuelsPlugin extends JavaPlugin {
         getCommand("duel").setTabCompleter(duelCommand);
         getCommand("lobby").setExecutor(new me.raikou.duels.command.LobbyCommand(this));
         getCommand("stats").setExecutor(new me.raikou.duels.command.StatsCommand(this));
+        getCommand("ping").setExecutor(new me.raikou.duels.command.PingCommand(this));
 
         // Listeners
         getServer().getPluginManager().registerEvents(new me.raikou.duels.listener.DuelListener(this), this);
