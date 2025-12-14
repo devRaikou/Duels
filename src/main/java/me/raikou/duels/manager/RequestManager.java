@@ -65,8 +65,8 @@ public class RequestManager {
 
         MessageUtil.sendSuccess(target, "request.accepted", "%sender%", sender.getName());
 
-        // Start Duel
-        plugin.getDuelManager().startDuel(sender, target, req.kitName);
+        // Start Duel (direct requests are unranked)
+        plugin.getDuelManager().startDuel(sender, target, req.kitName, false);
     }
 
     public void denyRequest(Player target, Player sender) {

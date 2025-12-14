@@ -45,21 +45,24 @@ public class DuelListener implements Listener {
     public void onInteract(org.bukkit.event.player.PlayerInteractEvent event) {
         if (event.getAction().name().contains("RIGHT")) {
             org.bukkit.inventory.ItemStack item = event.getItem();
-            if (item != null) {
-                if (item.getType() == org.bukkit.Material.COMPASS) {
-                    if (item.getItemMeta().displayName() != null) {
-                        plugin.getGuiManager().openQueueGui(event.getPlayer());
-                        event.setCancelled(true);
-                    }
-                } else if (item.getType() == org.bukkit.Material.BOOK) {
-                    if (item.getItemMeta().displayName() != null) {
-                        String plainName = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-                                .plainText().serialize(item.getItemMeta().displayName());
-                        if (plainName.contains("Kit Editor")) {
-                            plugin.getKitEditorManager().openEditorSelectionGui(event.getPlayer());
-                            event.setCancelled(true);
-                        }
-                    }
+            if (item != null && item.getItemMeta() != null && item.getItemMeta().displayName() != null) {
+                String plainName = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+                        .plainText().serialize(item.getItemMeta().displayName());
+
+                // Unranked - Iron Sword
+                if (item.getType() == org.bukkit.Material.IRON_SWORD && plainName.contains("Unranked")) {
+                    plugin.getGuiManager().openQueueGui(event.getPlayer(), me.raikou.duels.queue.QueueType.SOLO);
+                    event.setCancelled(true);
+                }
+                // Ranked - Diamond Sword
+                else if (item.getType() == org.bukkit.Material.DIAMOND_SWORD && plainName.contains("Ranked")) {
+                    plugin.getGuiManager().openQueueGui(event.getPlayer(), me.raikou.duels.queue.QueueType.RANKED);
+                    event.setCancelled(true);
+                }
+                // Kit Editor - Book
+                else if (item.getType() == org.bukkit.Material.BOOK && plainName.contains("Kit Editor")) {
+                    plugin.getKitEditorManager().openEditorSelectionGui(event.getPlayer());
+                    event.setCancelled(true);
                 }
             }
         }

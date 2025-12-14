@@ -16,6 +16,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import me.raikou.duels.queue.QueueType;
 
 public class GuiManager implements Listener {
 
@@ -31,7 +33,11 @@ public class GuiManager implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    public void openQueueGui(Player player) {
+    // Track which QueueType each player is selecting
+    private final Map<UUID, QueueType> playerQueueTypeSelection = new HashMap<>();
+
+    public void openQueueGui(Player player, QueueType type) {
+        playerQueueTypeSelection.put(player.getUniqueId(), type);
         // Calculate size: 9, 18, 27 etc. based on kit count
         int kitCount = plugin.getKitManager().getKits().size();
         int rows = (int) Math.ceil(kitCount / 9.0);
@@ -63,8 +69,11 @@ public class GuiManager implements Listener {
 
                 // Lore
                 java.util.List<Component> lore = new java.util.ArrayList<>();
+                int queueCount = (type == QueueType.RANKED)
+                        ? plugin.getQueueManager().getRankedQueueSize(kitName)
+                        : plugin.getQueueManager().getQueueSize(kitName);
                 for (String line : plugin.getLanguageManager().getList("gui.queue.lore")) {
-                    line = line.replace("%count%", String.valueOf(plugin.getQueueManager().getQueueSize(kitName)));
+                    line = line.replace("%count%", String.valueOf(queueCount));
                     lore.add(MiniMessage.miniMessage().deserialize(line));
                 }
                 meta.lore(lore);
@@ -111,9 +120,11 @@ public class GuiManager implements Listener {
 
             for (String kitName : plugin.getKitManager().getKits().keySet()) {
                 if (displayName.contains(kitName)) {
-                    // Perform queue join
+                    // Perform queue join with the selected type
+                    QueueType type = playerQueueTypeSelection.getOrDefault(player.getUniqueId(), QueueType.SOLO);
                     player.closeInventory();
-                    player.performCommand("duel join " + kitName);
+                    plugin.getQueueManager().addToQueue(player, kitName, type);
+                    playerQueueTypeSelection.remove(player.getUniqueId());
                     return;
                 }
             }

@@ -74,6 +74,17 @@ public class SQLiteStorage implements Storage {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        try (PreparedStatement ps = connection.prepareStatement(
+                "CREATE TABLE IF NOT EXISTS elo_ratings (" +
+                        "uuid VARCHAR(36), " +
+                        "kit_name VARCHAR(64), " +
+                        "elo INT DEFAULT 1000, " +
+                        "PRIMARY KEY (uuid, kit_name))")) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -161,6 +172,41 @@ public class SQLiteStorage implements Storage {
                 e.printStackTrace();
             }
             return null;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Integer> loadElo(UUID uuid, String kitName) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (PreparedStatement ps = connection
+                    .prepareStatement("SELECT elo FROM elo_ratings WHERE uuid=? AND kit_name=?")) {
+                ps.setString(1, uuid.toString());
+                ps.setString(2, kitName);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt("elo");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return 1000; // Default starting ELO
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> saveElo(UUID uuid, String kitName, int elo) {
+        return CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT INTO elo_ratings (uuid, kit_name, elo) VALUES (?,?,?) " +
+                            "ON CONFLICT(uuid, kit_name) DO UPDATE SET elo=?")) {
+                ps.setString(1, uuid.toString());
+                ps.setString(2, kitName);
+                ps.setInt(3, elo);
+                ps.setInt(4, elo);
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         });
     }
 }

@@ -74,23 +74,39 @@ public class LobbyManager {
     public void giveLobbyItems(Player player) {
         player.getInventory().clear();
 
-        org.bukkit.inventory.ItemStack compass = new org.bukkit.inventory.ItemStack(org.bukkit.Material.COMPASS);
-        org.bukkit.inventory.meta.ItemMeta meta = compass.getItemMeta();
-        if (meta != null) {
-            meta.displayName(
-                    me.raikou.duels.util.MessageUtil.parse("<gold><bold>Play Duels</bold> <gray>(Right Click)"));
-            compass.setItemMeta(meta);
+        // Unranked - Iron Sword
+        org.bukkit.inventory.ItemStack unrankedItem = new org.bukkit.inventory.ItemStack(
+                org.bukkit.Material.IRON_SWORD);
+        org.bukkit.inventory.meta.ItemMeta unrankedMeta = unrankedItem.getItemMeta();
+        if (unrankedMeta != null) {
+            unrankedMeta.displayName(
+                    me.raikou.duels.util.MessageUtil
+                            .parse("<gray><bold>Unranked</bold></gray> <dark_gray>(Right Click)"));
+            unrankedItem.setItemMeta(unrankedMeta);
         }
 
+        // Ranked - Diamond Sword
+        org.bukkit.inventory.ItemStack rankedItem = new org.bukkit.inventory.ItemStack(
+                org.bukkit.Material.DIAMOND_SWORD);
+        org.bukkit.inventory.meta.ItemMeta rankedMeta = rankedItem.getItemMeta();
+        if (rankedMeta != null) {
+            rankedMeta.displayName(
+                    me.raikou.duels.util.MessageUtil
+                            .parse("<gold><bold>Ranked</bold></gold> <dark_gray>(Right Click)"));
+            rankedItem.setItemMeta(rankedMeta);
+        }
+
+        // Kit Editor - Book
         org.bukkit.inventory.ItemStack editor = new org.bukkit.inventory.ItemStack(org.bukkit.Material.BOOK);
         org.bukkit.inventory.meta.ItemMeta editorMeta = editor.getItemMeta();
         if (editorMeta != null) {
             editorMeta.displayName(
-                    me.raikou.duels.util.MessageUtil.parse("<aqua><bold>Kit Editor</bold> <gray>(Right Click)"));
+                    me.raikou.duels.util.MessageUtil.parse("<aqua><bold>Kit Editor</bold></aqua> <gray>(Right Click)"));
             editor.setItemMeta(editorMeta);
         }
 
-        player.getInventory().setItem(0, compass);
+        player.getInventory().setItem(0, unrankedItem);
+        player.getInventory().setItem(1, rankedItem);
         player.getInventory().setItem(4, editor);
         player.setHealth(20);
         player.setFoodLevel(20);

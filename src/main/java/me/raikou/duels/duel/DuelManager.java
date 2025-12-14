@@ -1,7 +1,6 @@
 package me.raikou.duels.duel;
 
 import me.raikou.duels.DuelsPlugin;
-import me.raikou.duels.DuelsPlugin;
 import me.raikou.duels.arena.Arena;
 import me.raikou.duels.kit.Kit;
 import org.bukkit.entity.Player;
@@ -18,7 +17,7 @@ public class DuelManager {
         this.plugin = plugin;
     }
 
-    public void startDuel(Player p1, Player p2, String kitName) {
+    public void startDuel(Player p1, Player p2, String kitName, boolean isRanked) {
         Arena arena = plugin.getArenaManager().getAvailableArena();
         if (arena == null) {
             p1.sendMessage("No arena available!");
@@ -46,9 +45,8 @@ public class DuelManager {
             applyKit(p2, kit, kitName);
         }
 
-        // Create duel with new instance world context
-        // Create duel with new instance world context
-        Duel duel = new Duel(plugin, arena, players, kitName, instanceWorld);
+        // Create duel with ranked flag
+        Duel duel = new Duel(plugin, arena, players, kitName, instanceWorld, isRanked);
 
         activeDuels.add(duel);
         playerDuelMap.put(p1.getUniqueId(), duel);

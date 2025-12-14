@@ -18,4 +18,9 @@ public interface Storage {
 
     // Returns layoutData string or null
     CompletableFuture<String> loadKitLayout(UUID uuid, String kitName);
+
+    // ELO per kit
+    CompletableFuture<Integer> loadElo(UUID uuid, String kitName);
+
+    CompletableFuture<Void> saveElo(UUID uuid, String kitName, int elo);
 }

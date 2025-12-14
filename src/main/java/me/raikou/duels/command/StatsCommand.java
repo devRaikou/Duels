@@ -58,6 +58,13 @@ public class StatsCommand implements CommandExecutor {
         sender.sendMessage(MessageUtil.getRaw("stats.kills", "%amount%", String.valueOf(stats.getKills())));
         sender.sendMessage(MessageUtil.getRaw("stats.deaths", "%amount%", String.valueOf(stats.getDeaths())));
         sender.sendMessage(MessageUtil.getRaw("stats.kd", "%ratio%", df.format(kdRatio)));
+
+        // Show ELO for each kit
+        sender.sendMessage(MessageUtil.getRaw("stats.elo-header"));
+        for (String kitName : plugin.getKitManager().getKits().keySet()) {
+            int elo = plugin.getStorage().loadElo(target.getUniqueId(), kitName).join();
+            sender.sendMessage(MessageUtil.getRaw("stats.elo-kit", "%kit%", kitName, "%elo%", String.valueOf(elo)));
+        }
         sender.sendMessage(MessageUtil.parse(" ")); // Empty line footer
 
         return true;

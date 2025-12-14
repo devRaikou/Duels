@@ -18,6 +18,8 @@ stats:
   kills: "<gray>🗡 Öldürme:</gray> <green>%amount%</green>"
   deaths: "<gray>💀 Ölme:</gray> <red>%amount%</red>"
   kd: "<gray>📊 K/D Oranı:</gray> <gold>%ratio%</gold>"
+  elo-header: "<gray><strikethrough>     </strikethrough> <gold>ELO Puanları</gold> <strikethrough>     </strikethrough></gray>"
+  elo-kit: "  <gray>%kit%:</gray> <yellow>%elo%</yellow>"
 
 queue:
   join: "<yellow>%kit%</yellow> sırasına katıldınız <dark_gray>(%type%)</dark_gray>"
@@ -86,3 +88,9 @@ request:
   no-request: "<red>Bu oyuncudan bekleyen bir isteğin yok."
   self-request: "<red>Kendinle düello atamazsın!"
   already-sent: "<red>Bu oyuncuya zaten bir istek gönderdin. Süresinin dolmasını bekle."
+
+ranked:
+  queue-info: "<gray>ELO'n: <gold>%elo%</gold>"
+  elo-gain: "<green>+%amount% ELO</green> <gray>(Yeni: <gold>%elo%</gold>)</gray>"
+  elo-loss: "<red>-%amount% ELO</red> <gray>(Yeni: <gold>%elo%</gold>)</gray>"
+  opponent-elo: "<gray>Rakip ELO: <yellow>%elo%</yellow>"

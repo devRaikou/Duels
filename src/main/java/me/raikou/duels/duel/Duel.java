@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import me.raikou.duels.DuelsPlugin;
 import me.raikou.duels.arena.Arena;
-import me.raikou.duels.arena.ArenaState;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -28,8 +27,11 @@ public class Duel {
     @Getter
     private long startTime;
     private final String kitName;
+    @Getter
+    private final boolean ranked;
 
-    public Duel(DuelsPlugin plugin, Arena arena, List<UUID> players, String kitName, org.bukkit.World instanceWorld) {
+    public Duel(DuelsPlugin plugin, Arena arena, List<UUID> players, String kitName, org.bukkit.World instanceWorld,
+            boolean isRanked) {
         this.plugin = plugin;
         this.arena = arena;
         this.players = players;
@@ -37,6 +39,7 @@ public class Duel {
         this.alivePlayers = new ArrayList<>(players);
         this.state = DuelState.STARTING;
         this.instanceWorld = instanceWorld;
+        this.ranked = isRanked;
     }
 
     public void start() {
@@ -182,6 +185,20 @@ public class Duel {
             }
         }
 
+        // Handle ELO for ranked duels
+        if (ranked) {
+            UUID loser = null;
+            for (UUID uuid : players) {
+                if (!uuid.equals(winner)) {
+                    loser = uuid;
+                    break;
+                }
+            }
+            if (loser != null) {
+                updateElo(winner, loser);
+            }
+        }
+
         // Cleanup after delay
         new BukkitRunnable() {
             @Override
@@ -189,6 +206,37 @@ public class Duel {
                 reset();
             }
         }.runTaskLater(plugin, 60L); // 3 seconds
+    }
+
+    private void updateElo(UUID winner, UUID loser) {
+        int eloGain = plugin.getConfig().getInt("ranked.elo-gain-base", 25);
+        int eloLoss = plugin.getConfig().getInt("ranked.elo-loss-base", 25);
+
+        // Load current ELOs and calculate changes
+        plugin.getStorage().loadElo(winner, kitName).thenAccept(winnerElo -> {
+            plugin.getStorage().loadElo(loser, kitName).thenAccept(loserElo -> {
+                // Simple ELO calculation (can be enhanced with proper ELO formula later)
+                int newWinnerElo = winnerElo + eloGain;
+                int newLoserElo = Math.max(100, loserElo - eloLoss); // Minimum 100 ELO
+
+                plugin.getStorage().saveElo(winner, kitName, newWinnerElo);
+                plugin.getStorage().saveElo(loser, kitName, newLoserElo);
+
+                // Notify players
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    Player wp = Bukkit.getPlayer(winner);
+                    Player lp = Bukkit.getPlayer(loser);
+                    if (wp != null) {
+                        me.raikou.duels.util.MessageUtil.sendSuccess(wp, "ranked.elo-gain",
+                                "%amount%", String.valueOf(eloGain), "%elo%", String.valueOf(newWinnerElo));
+                    }
+                    if (lp != null) {
+                        me.raikou.duels.util.MessageUtil.sendError(lp, "ranked.elo-loss",
+                                "%amount%", String.valueOf(eloLoss), "%elo%", String.valueOf(newLoserElo));
+                    }
+                });
+            });
+        });
     }
 
 }

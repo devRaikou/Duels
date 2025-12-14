@@ -81,12 +81,12 @@ kits:
       leggings: IRON_LEGGINGS:1
       boots: IRON_BOOTS:1
 lobby:
-  world: lobby
-  x: 392.93352684868114
-  y: 238.5
-  z: -93.1821015480136
-  yaw: 89.64877
-  pitch: 5.756008
+  world: lobi
+  x: 0.4705661987265322
+  y: 191.0
+  z: 0.381356655356731
+  yaw: 140.26251
+  pitch: -0.20012859
 
 # ==========================================
 #             SCOREBOARD
@@ -99,6 +99,8 @@ lobby:
 # %queue%     - "Yes"/"No" if player is in queue
 # %opponent%  - Opponent Name (Game only)
 # %map%       - Arena Name (Game only)
+# %elo%       - Your ELO (Ranked only)
+# %opponent_elo% - Opponent ELO (Ranked only)
 scoreboard:
   title: <bold><gradient:#FFD700:#FFA500> DUELS </gradient></bold>
   lobby:
@@ -120,6 +122,19 @@ scoreboard:
   - '§fMap:'
   - §a %map%
   - §3
+  - §eplay.raikou.dev
+  game-ranked:
+  - §7<gray>  %date%
+  - §1
+  - '§fOpponent:'
+  - §c %opponent% §7(%opponent_elo%)
+  - §2
+  - '§fYour ELO:'
+  - §e %elo%
+  - §3
+  - '§fMap:'
+  - §a %map%
+  - §4
   - §eplay.raikou.dev
 
 # ==========================================
@@ -148,3 +163,15 @@ motd:
   lines:
   - '     <gradient:#00AAFF:#00FFFF><bold>RAIKOU DUELS</bold></gradient>     '
   - '   <gray>Practice & Competitive PvP</gray>   '
+
+# ==========================================
+#              RANKED SYSTEM
+# ==========================================
+ranked:
+  starting-elo: 1000
+  elo-range-initial: 100    # Initial ELO range for matching
+  elo-range-expansion: 50   # Range expands by this every 10 seconds
+  elo-range-max: 500        # Maximum allowed ELO range
+  elo-gain-base: 25         # ELO gained on win
+  elo-loss-base: 25         # ELO lost on loss
+

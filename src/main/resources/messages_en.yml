@@ -18,6 +18,8 @@ stats:
   kills: "<gray>🗡 Kills:</gray> <green>%amount%</green>"
   deaths: "<gray>💀 Deaths:</gray> <red>%amount%</red>"
   kd: "<gray>📊 K/D Ratio:</gray> <gold>%ratio%</gold>"
+  elo-header: "<gray><strikethrough>     </strikethrough> <gold>ELO Ratings</gold> <strikethrough>     </strikethrough></gray>"
+  elo-kit: "  <gray>%kit%:</gray> <yellow>%elo%</yellow>"
 
 queue:
   join: "Joined queue for <yellow>%kit%</yellow> <dark_gray>(%type%)</dark_gray>"
@@ -86,3 +88,9 @@ request:
   no-request: "<red>You do not have a pending request from that player."
   self-request: "<red>You cannot duel yourself!"
   already-sent: "<red>You already sent a request to this player. Wait for it to expire."
+
+ranked:
+  queue-info: "<gray>Your ELO: <gold>%elo%</gold>"
+  elo-gain: "<green>+%amount% ELO</green> <gray>(New: <gold>%elo%</gold>)</gray>"
+  elo-loss: "<red>-%amount% ELO</red> <gray>(New: <gold>%elo%</gold>)</gray>"
+  opponent-elo: "<gray>Opponent ELO: <yellow>%elo%</yellow>"

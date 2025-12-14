@@ -3,7 +3,6 @@ package me.raikou.duels.util;
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import me.raikou.duels.DuelsPlugin;
 import me.raikou.duels.duel.Duel;
-import me.raikou.duels.duel.Duel;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -60,7 +59,11 @@ public class BoardManager {
         java.util.List<String> lines;
 
         if (duel != null) {
-            lines = plugin.getConfig().getStringList("scoreboard.game");
+            if (duel.isRanked()) {
+                lines = plugin.getConfig().getStringList("scoreboard.game-ranked");
+            } else {
+                lines = plugin.getConfig().getStringList("scoreboard.game");
+            }
         } else {
             lines = plugin.getConfig().getStringList("scoreboard.lobby");
         }
@@ -82,9 +85,20 @@ public class BoardManager {
             if (duel != null) {
                 line = line.replace("%opponent%", getOpponentName(player, duel));
                 line = line.replace("%map%", duel.getArena().getName());
+
+                // ELO placeholders for ranked
+                if (duel.isRanked()) {
+                    String kitName = duel.getKitName();
+                    int playerElo = plugin.getStorage().loadElo(player.getUniqueId(), kitName).join();
+                    int opponentElo = getOpponentElo(player, duel, kitName);
+                    line = line.replace("%elo%", String.valueOf(playerElo));
+                    line = line.replace("%opponent_elo%", String.valueOf(opponentElo));
+                }
             } else {
                 line = line.replace("%opponent%", "None");
                 line = line.replace("%map%", "None");
+                line = line.replace("%elo%", "N/A");
+                line = line.replace("%opponent_elo%", "N/A");
             }
 
             line = convertLegacyToMiniMessage(line);
@@ -131,5 +145,14 @@ public class BoardManager {
             }
         }
         return "None";
+    }
+
+    private int getOpponentElo(Player player, Duel duel, String kitName) {
+        for (UUID uuid : duel.getPlayers()) {
+            if (!uuid.equals(player.getUniqueId())) {
+                return plugin.getStorage().loadElo(uuid, kitName).join();
+            }
+        }
+        return 1000;
     }
 }
