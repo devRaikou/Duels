@@ -195,4 +195,26 @@ public class DuelListener implements Listener {
             event.setCancelled(true);
         }
     }
+
+    @EventHandler
+    public void onCommandPreprocess(org.bukkit.event.player.PlayerCommandPreprocessEvent event) {
+        if (plugin.getDuelManager().getDuel(event.getPlayer()) != null) {
+            String message = event.getMessage().toLowerCase();
+            String[] blocked = { "/lobby", "/hub", "/l", "/spawn", "/tp", "/tpa", "/tpahere", "/warp", "/home", "/back",
+                    "/gamemode", "/gm", "/fly", "/minecraft:me" };
+
+            // Allow admin bypass
+            if (event.getPlayer().hasPermission("duels.admin"))
+                return;
+
+            for (String cmd : blocked) {
+                if (message.startsWith(cmd + " ") || message.equals(cmd)) {
+                    event.setCancelled(true);
+                    me.raikou.duels.util.MessageUtil.sendError(event.getPlayer(),
+                            "You cannot use this command while in a duel!");
+                    return;
+                }
+            }
+        }
+    }
 }

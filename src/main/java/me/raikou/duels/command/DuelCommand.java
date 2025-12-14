@@ -26,13 +26,17 @@ public class DuelCommand implements CommandExecutor {
         }
 
         if (args.length == 0) {
-            sendHelp(player);
+            sendPluginInfo(player);
             return true;
         }
 
         String sub = args[0].toLowerCase();
 
         switch (sub) {
+            case "help":
+                sendHelp(player);
+                break;
+
             case "join":
                 if (args.length < 2) {
                     me.raikou.duels.util.MessageUtil.sendError(player, "Usage: <yellow>/duel join <kit>");
@@ -147,24 +151,43 @@ public class DuelCommand implements CommandExecutor {
         }
     }
 
+    private void sendPluginInfo(Player player) {
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                "<newline><gradient:#FFD700:#FFA500><bold>DUELS CORE</bold></gradient> <gray>v"
+                        + plugin.getDescription().getVersion() + "</gray>"));
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                "<gray>Created by <yellow>" + plugin.getDescription().getAuthors().get(0) + "</yellow></gray>"));
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                "<gray>Type <yellow>/duel help</yellow> for a list of commands.</gray>"));
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(" "));
+    }
+
     private void sendHelp(Player player) {
         player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
-                "<newline><gradient:#FFD700:#FFA500><bold>DUELS CORE</bold></gradient> <gray>- Commands</gray>"));
-        player.sendMessage(me.raikou.duels.util.MessageUtil
-                .parse("<dark_gray>▪</dark_gray> <yellow>/duel join <kit></yellow> <gray>Join the queue</gray>"));
-        player.sendMessage(me.raikou.duels.util.MessageUtil
-                .parse("<dark_gray>▪</dark_gray> <yellow>/duel leave</yellow> <gray>Leave the queue</gray>"));
+                "<newline><gradient:#FFD700:#FFA500><bold>DUELS HELP</bold></gradient>"));
+
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                "<dark_gray>▪</dark_gray> <yellow>/duel join <kit></yellow> <gray>Join a queue</gray>"));
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                "<dark_gray>▪</dark_gray> <yellow>/duel leave</yellow> <gray>Leave the queue</gray>"));
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                "<dark_gray>▪</dark_gray> <yellow>/lobby</yellow> <gray>Return to lobby</gray>"));
+        player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                "<dark_gray>▪</dark_gray> <yellow>/stats [player]</yellow> <gray>View statistics</gray>"));
+
         if (player.hasPermission("duels.admin")) {
+            player.sendMessage(
+                    me.raikou.duels.util.MessageUtil.parse("<newline><gold><bold>ADMIN COMMANDS</bold></gold>"));
             player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
-                    "<dark_gray>▪</dark_gray> <yellow>/duel admin arena create <name></yellow> <gray>Create arena</gray>"));
+                    "<dark_gray>▪</dark_gray> <yellow>/duel admin arena create <name></yellow>"));
             player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
-                    "<dark_gray>▪</dark_gray> <yellow>/duel admin arena setspawn <name> <1|2|spect></yellow> <gray>Set spawns</gray>"));
+                    "<dark_gray>▪</dark_gray> <yellow>/duel admin arena setspawn <name> <1|2|spect></yellow>"));
             player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
-                    "<dark_gray>▪</dark_gray> <yellow>/duel admin kit create <name></yellow> <gray>Save inventory as kit</gray>"));
-            player.sendMessage(me.raikou.duels.util.MessageUtil
-                    .parse("<dark_gray>▪</dark_gray> <yellow>/duel admin setlobby</yellow> <gray>Set lobby</gray>"));
-            player.sendMessage(me.raikou.duels.util.MessageUtil
-                    .parse("<dark_gray>▪</dark_gray> <yellow>/duel admin reload</yellow> <gray>Reload config</gray>"));
+                    "<dark_gray>▪</dark_gray> <yellow>/duel admin kit create <name></yellow>"));
+            player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                    "<dark_gray>▪</dark_gray> <yellow>/duel admin setlobby</yellow>"));
+            player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
+                    "<dark_gray>▪</dark_gray> <yellow>/duel admin reload</yellow>"));
         }
         player.sendMessage(me.raikou.duels.util.MessageUtil.parse(" "));
     }

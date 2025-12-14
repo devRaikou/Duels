@@ -21,6 +21,11 @@ public class QueueManager {
     }
 
     public void addToQueue(Player player, String kitName, QueueType type) {
+        if (isInQueue(player)) {
+            me.raikou.duels.util.MessageUtil.sendError(player, "You are already in a queue!");
+            return;
+        }
+
         // Check if kit exists
         Kit kit = plugin.getKitManager().getKit(kitName);
         if (kit == null) {
