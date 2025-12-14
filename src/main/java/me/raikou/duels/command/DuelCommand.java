@@ -73,7 +73,14 @@ public class DuelCommand implements CommandExecutor {
             plugin.reloadConfig();
             plugin.getArenaManager().loadArenas();
             plugin.getKitManager().loadKits();
+            plugin.getLobbyManager().loadLobby();
             player.sendMessage("Configuration reloaded.");
+            return;
+        }
+
+        if (sub.equals("setlobby")) {
+            plugin.getLobbyManager().setLobby(player.getLocation());
+            player.sendMessage("§aLobby location set!");
             return;
         }
 
@@ -148,6 +155,7 @@ public class DuelCommand implements CommandExecutor {
             player.sendMessage("§7/duel admin arena create <name> §f- Create arena");
             player.sendMessage("§7/duel admin arena setspawn <name> <1|2|spectator> §f- Set spawns");
             player.sendMessage("§7/duel admin kit create <name> §f- Save inventory as kit");
+            player.sendMessage("§7/duel admin setlobby §f- Set lobby location");
             player.sendMessage("§7/duel admin reload §f- Reload config");
         }
         player.sendMessage(" ");

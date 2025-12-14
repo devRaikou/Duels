@@ -9,6 +9,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.UUID;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 public class DuelListener implements Listener {
 
@@ -16,6 +17,14 @@ public class DuelListener implements Listener {
 
     public DuelListener(DuelsPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        if (plugin.getLobbyManager().isLobbySet()) {
+            plugin.getLobbyManager().teleportToLobby(player);
+        }
     }
 
     @EventHandler

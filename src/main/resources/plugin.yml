@@ -9,6 +9,10 @@ commands:
     description: Main command for Duels
     usage: /duel <subcommand>
     aliases: [duels]
+  lobby:
+    description: Teleport to lobby
+    usage: /lobby
+    aliases: [hub, l]
 permissions:
   duels.admin:
     description: Admin permission for Duels
