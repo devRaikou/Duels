@@ -87,6 +87,7 @@ arenas:
 # /duel admin kit create <name> (Will copy your current inventory)
 kits:
   default:
+    icon: DIAMOND_SWORD
     items:
     - DIAMOND_SWORD:1
     - GOLDEN_APPLE:5
@@ -95,7 +96,9 @@ kits:
       chestplate: DIAMOND_CHESTPLATE:1
       leggings: DIAMOND_LEGGINGS:1
       boots: DIAMOND_BOOTS:1
+
   SG:
+    icon: IRON_SWORD
     items:
     - IRON_SWORD:1
     - FLINT_AND_STEEL:1
@@ -109,6 +112,80 @@ kits:
       chestplate: IRON_CHESTPLATE:1
       leggings: IRON_LEGGINGS:1
       boots: IRON_BOOTS:1
+
+  # --- DUEL / ARENA KITS ---
+
+  NoDebuff:
+    icon: SPLASH_POTION
+    items:
+    - DIAMOND_SWORD:1
+    - ENDER_PEARL:16
+    - SPLASH_POTION{Potion:healing}:32
+    - SPLASH_POTION{Potion:swiftness}:8
+    - GOLDEN_CARROT:64
+    armor:
+      helmet: DIAMOND_HELMET:1
+      chestplate: DIAMOND_CHESTPLATE:1
+      leggings: DIAMOND_LEGGINGS:1
+      boots: DIAMOND_BOOTS:1
+
+  Combo:
+    icon: GOLDEN_APPLE
+    items:
+    - DIAMOND_SWORD:1
+    - GOLDEN_APPLE:64
+    armor:
+      helmet: DIAMOND_HELMET:1
+      chestplate: DIAMOND_CHESTPLATE:1
+      leggings: DIAMOND_LEGGINGS:1
+      boots: DIAMOND_BOOTS:1
+
+  BuildUHC:
+    icon: COBBLESTONE
+    items:
+    - DIAMOND_SWORD:1
+    - BOW:1
+    - ARROW:64
+    - GOLDEN_APPLE:6
+    - WATER_BUCKET:1
+    - LAVA_BUCKET:1
+    - COBBLESTONE:64
+    - OAK_PLANKS:64
+    armor:
+      helmet: DIAMOND_HELMET:1
+      chestplate: DIAMOND_CHESTPLATE:1
+      leggings: DIAMOND_LEGGINGS:1
+      boots: DIAMOND_BOOTS:1
+
+  Sumo:
+    icon: STICK
+    items: []
+    armor: {}
+
+  Archer:
+    icon: BOW
+    items:
+    - BOW:1
+    - ARROW:64
+    - STONE_SWORD:1
+    armor:
+      helmet: LEATHER_HELMET:1
+      chestplate: LEATHER_CHESTPLATE:1
+      leggings: LEATHER_LEGGINGS:1
+      boots: LEATHER_BOOTS:1
+
+  Classic:
+    icon: DIAMOND_CHESTPLATE
+    items:
+    - DIAMOND_SWORD:1
+    - BOW:1
+    - ARROW:32
+    - GOLDEN_APPLE:3
+    armor:
+      helmet: DIAMOND_HELMET:1
+      chestplate: DIAMOND_CHESTPLATE:1
+      leggings: DIAMOND_LEGGINGS:1
+      boots: DIAMOND_BOOTS:1
 lobby:
   world: lobi
   x: 0.4705661987265322

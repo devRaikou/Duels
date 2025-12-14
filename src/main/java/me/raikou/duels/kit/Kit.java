@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 public class Kit {
     private final String name;
+    private final Material icon; // GUI display icon
     private final List<ItemStack> items;
     private final ItemStack helmet;
     private final ItemStack chestplate;

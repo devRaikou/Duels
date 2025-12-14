@@ -38,27 +38,37 @@ public class GuiManager implements Listener {
 
     public void openQueueGui(Player player, QueueType type) {
         playerQueueTypeSelection.put(player.getUniqueId(), type);
-        // Calculate size: 9, 18, 27 etc. based on kit count
-        int kitCount = plugin.getKitManager().getKits().size();
-        int rows = (int) Math.ceil(kitCount / 9.0);
-        if (rows == 0)
-            rows = 1;
-        int size = Math.min(rows * 9, 54);
 
+        // Fixed 54-slot (6 rows) modern GUI
+        int size = 54;
         Inventory inv = Bukkit.createInventory(null, size, getGuiTitle());
+
+        // Fill with black glass pane border
+        ItemStack borderPane = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta borderMeta = borderPane.getItemMeta();
+        if (borderMeta != null) {
+            borderMeta.displayName(Component.text(" "));
+            borderPane.setItemMeta(borderMeta);
+        }
+
+        // Fill all slots with border first
+        for (int i = 0; i < size; i++) {
+            inv.setItem(i, borderPane);
+        }
+
+        // Kit placement slots - rows 2 and 3 (slots 10-16. 19-25), centered
+        int[] kitSlots = { 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34 };
 
         int index = 0;
         for (Map.Entry<String, Kit> entry : plugin.getKitManager().getKits().entrySet()) {
-            if (index >= size)
+            if (index >= kitSlots.length)
                 break;
 
             String kitName = entry.getKey();
             Kit kit = entry.getValue();
 
-            ItemStack icon = new ItemStack(Material.PAPER); // Default
-            if (kit.getItems() != null && !kit.getItems().isEmpty()) {
-                icon = kit.getItems().get(0).clone(); // Use first item as icon
-            }
+            // Use icon from config
+            ItemStack icon = new ItemStack(kit.getIcon());
 
             ItemMeta meta = icon.getItemMeta();
             if (meta != null) {
@@ -80,7 +90,7 @@ public class GuiManager implements Listener {
                 icon.setItemMeta(meta);
             }
 
-            inv.setItem(index, icon);
+            inv.setItem(kitSlots[index], icon);
             index++;
         }
 

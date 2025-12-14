@@ -35,6 +35,13 @@ public class KitManager {
             if (section == null)
                 continue;
 
+            // Load icon from config (default: PAPER)
+            String iconStr = section.getString("icon", "PAPER");
+            Material icon = Material.matchMaterial(iconStr);
+            if (icon == null) {
+                icon = Material.PAPER;
+            }
+
             List<String> itemStrings = section.getStringList("items");
             List<ItemStack> items = new ArrayList<>();
 
@@ -47,7 +54,7 @@ public class KitManager {
             ItemStack leggings = parseItem(section.getString("armor.leggings"));
             ItemStack boots = parseItem(section.getString("armor.boots"));
 
-            Kit kit = new Kit(key, items, helmet, chestplate, leggings, boots);
+            Kit kit = new Kit(key, icon, items, helmet, chestplate, leggings, boots);
             kits.put(key, kit);
         }
         plugin.getLogger().info("Loaded " + kits.size() + " kits.");
