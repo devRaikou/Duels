@@ -1,0 +1,64 @@
+# ==========================================
+#         DUELS CORE CONFIGURATION
+# ==========================================
+
+# Settings used for general plugin behavior
+settings:
+  debug: false   # Enable debug messages in console
+  
+storage:
+  # Type of storage: 'mysql' or 'sqlite'
+  # sqlite: Using local file (database.db) in plugin folder. No setup required.
+  # mysql: Using external MySQL server. Requires credentials.
+  type: "sqlite"
+  
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "duels"
+    username: "root"
+    password: ""
+
+# ==========================================
+#               ARENAS
+# ==========================================
+# Arenas are managed via in-game commands.
+# /duel admin arena create <name>
+# /duel admin arena setspawn <name> <1|2|spectator>
+arenas:
+  example_arena:
+    world: "world"
+    spawn1:
+      x: 100.5
+      y: 64.0
+      z: 100.5
+      yaw: 0.0
+      pitch: 0.0
+    spawn2:
+      x: 120.5
+      y: 64.0
+      z: 100.5
+      yaw: 180.0
+      pitch: 0.0
+    spectator:
+       x: 110.5
+       y: 70.0
+       z: 100.5
+       yaw: 90.0
+       pitch: 0.0
+
+# ==========================================
+#                KITS
+# ==========================================
+# Kits can be created via in-game command:
+# /duel admin kit create <name> (Will copy your current inventory)
+kits:
+  default:
+    items:
+      - "DIAMOND_SWORD:1"
+      - "GOLDEN_APPLE:5"
+    armor:
+      helmet: "DIAMOND_HELMET:1"
+      chestplate: "DIAMOND_CHESTPLATE:1"
+      leggings: "DIAMOND_LEGGINGS:1"
+      boots: "DIAMOND_BOOTS:1"

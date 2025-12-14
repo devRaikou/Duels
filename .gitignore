@@ -1,0 +1,18 @@
+# Maven
+target/
+*.log
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.settings/
+.vscode/
+bin/
+
+# Java
+*.class
+*.jar

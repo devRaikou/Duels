@@ -1,0 +1,8 @@
+prefix: "<dark_gray>[<gold>Duels<dark_gray>] <gray>"
+duel:
+  start: "<green>Duel started!"
+  end: "<gold>Duel ended! Winner: <yellow>%winner%"
+  countdown: "<yellow>Starting in %count%..."
+error:
+  no_arena: "<red>No arena available!"
+  player_only: "<red>This command is only for players."

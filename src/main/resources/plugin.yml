@@ -1,0 +1,15 @@
+name: Duels
+version: 1.5.0-SNAPSHOT
+main: me.raikou.duels.DuelsPlugin
+api-version: 1.21
+authors: [Raikou]
+description: Professional Duels Core Plugin
+commands:
+  duel:
+    description: Main command for Duels
+    usage: /duel <subcommand>
+    aliases: [duels]
+permissions:
+  duels.admin:
+    description: Admin permission for Duels
+    default: op
