@@ -210,8 +210,7 @@ public class DuelListener implements Listener {
             for (String cmd : blocked) {
                 if (message.startsWith(cmd + " ") || message.equals(cmd)) {
                     event.setCancelled(true);
-                    me.raikou.duels.util.MessageUtil.sendError(event.getPlayer(),
-                            "You cannot use this command while in a duel!");
+                    me.raikou.duels.util.MessageUtil.sendError(event.getPlayer(), "duel.blocked-command");
                     return;
                 }
             }

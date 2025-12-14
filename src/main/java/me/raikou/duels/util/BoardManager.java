@@ -20,10 +20,6 @@ import java.util.UUID;
 public class BoardManager {
 
     private final DuelsPlugin plugin;
-    // Simple way: Keep a scoreboard per player or use a shared one for lobby?
-    // Paper 1.21 allows modern scoreboards, but standard Bukkit API is safest for
-    // compatibility.
-    // We will use one scoreboard per player to avoid flicker/conflict.
 
     public BoardManager(DuelsPlugin plugin) {
         this.plugin = plugin;
@@ -90,15 +86,7 @@ public class BoardManager {
                 line = line.replace("%map%", "None");
             }
 
-            // Fix for ParsingException: Convert legacy § codes to MiniMessage tags or
-            // remove them
-            // This allows users to mix legacy and new formats without crashing.
             line = convertLegacyToMiniMessage(line);
-
-            // Convert MiniMessage to Legacy because Bukkit Scoreboard entries (String)
-            // don't support Components directly as entries unless using teams.
-            // But for simple lines, we need legacy string.
-            // Using LegacyComponentSerializer to convert <gray> props to §7
             net.kyori.adventure.text.Component comp = me.raikou.duels.util.MessageUtil.parse(line);
             String legacyLine = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
                     .serialize(comp);

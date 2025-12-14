@@ -5,6 +5,7 @@
 # Settings used for general plugin behavior
 settings:
   debug: false # Enable debug messages in console
+  language: en # Language code (en, tr)
 
 storage:
   # Type of storage: 'mysql' or 'sqlite'

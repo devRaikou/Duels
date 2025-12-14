@@ -47,7 +47,8 @@ public class DuelManager {
         }
 
         // Create duel with new instance world context
-        Duel duel = new Duel(plugin, arena, players, instanceWorld);
+        // Create duel with new instance world context
+        Duel duel = new Duel(plugin, arena, players, kitName, instanceWorld);
 
         activeDuels.add(duel);
         playerDuelMap.put(p1.getUniqueId(), duel);

@@ -1,0 +1,70 @@
+prefix: "<gradient:#FFD700:#FFA500><bold>Duels</bold></gradient> <dark_gray>»</dark_gray> "
+
+general:
+  no-permission: "You do not have permission."
+  only-players: "Only players can use this command."
+  unknown-command: "Unknown subcommand."
+  config-reloaded: "Configuration reloaded successfully."
+  lobby-set: "Lobby location has been set!"
+  teleport-lobby: "Teleported to lobby."
+  lobby-not-set: "Lobby is not set!"
+  player-not-found: "Player not found or offline."
+  console-usage: "Console must specify a player."
+
+stats:
+  header: "<newline><gradient:#FFD700:#FFA500><bold>STATISTICS</bold></gradient> <dark_gray>▪</dark_gray> <yellow>%player%</yellow>"
+  wins: "<gray>⚔ Wins:</gray> <green>%amount%</green>"
+  losses: "<gray>☠ Losses:</gray> <red>%amount%</red>"
+  kills: "<gray>🗡 Kills:</gray> <green>%amount%</green>"
+  deaths: "<gray>💀 Deaths:</gray> <red>%amount%</red>"
+  kd: "<gray>📊 K/D Ratio:</gray> <gold>%ratio%</gold>"
+
+queue:
+  join: "Joined queue for <yellow>%kit%</yellow> <dark_gray>(%type%)</dark_gray>"
+  leave: "You have been removed from the queue."
+  already-in: "You are already in a queue!"
+  not-in: "You are not in any queue."
+  info: "Players in queue: <aqua>%count%/%required%"
+
+duel:
+  start: "<green>Duel started against <yellow>%opponent%</yellow> using kit <aqua>%kit%</aqua>!"
+  end-winner: "<green>You won the duel against <yellow>%opponent%</yellow>!"
+  end-loser: "<red>You lost the duel against <yellow>%opponent%</yellow>."
+  kit-not-found: "Kit <yellow>%kit%</yellow> not found!"
+  already-in-duel: "You are already in a duel!"
+  blocked-command: "You cannot use this command while in a duel!"
+  opponent-quit: "Opponent left the game. You win!"
+
+admin:
+  kit-created: "Kit <yellow>%kit%</yellow> created from your inventory."
+  arena-created: "Arena %name% created. Please set spawns (1, 2, spectator)."
+  spawn-set: "Spawn %type% set for arena %name%."
+
+editor:
+  kit-not-found: "Kit not found."
+  instructions: "Rearrange your inventory. Click the <green>Emerald Block</green> (Inventory) to save."
+  saved: "Kit layout saved!"
+  saved: "Kit layout saved!"
+  cancelled: "Editing cancelled."
+
+gui:
+  queue:
+    title: "<gradient:#FFD700:#FFA500><bold>Select a Kit</bold></gradient>"
+    item-name: "<yellow>%kit%</yellow>"
+    lore:
+      - "<gray>Click to join queue"
+      - ""
+      - "<green>Queue: <white>%count%</white>"
+  editor:
+    title: "<gradient:#00AAFF:#00FFFF><bold>Kit Editor</bold></gradient>"
+    save-button: "<green><bold>SAVE & EXIT</bold>"
+
+titles:
+  duel-start:
+    title: "<green>FIGHT!"
+    subtitle: "<gray>Good luck!"
+  duel-end:
+    title: "<gold>VICTORY!"
+    subtitle: "<yellow>Winner: <white>%winner%"
+  countdown:
+    title: "<yellow>%count%"

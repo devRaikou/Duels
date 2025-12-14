@@ -19,7 +19,7 @@ public class LobbyCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
             @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
+            me.raikou.duels.util.MessageUtil.sendError(sender, "general.only-players");
             return true;
         }
 

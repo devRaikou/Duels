@@ -1,0 +1,70 @@
+prefix: "<gradient:#FFD700:#FFA500><bold>Duels</bold></gradient> <dark_gray>»</dark_gray> "
+
+general:
+  no-permission: "Buna izniniz yok."
+  only-players: "Bu komutu sadece oyuncular kullanabilir."
+  unknown-command: "Bilinmeyen alt komut."
+  config-reloaded: "Yapılandırma başarıyla yenilendi."
+  lobby-set: "Lobi noktası ayarlandı!"
+  teleport-lobby: "Lobiye ışınlandınız."
+  lobby-not-set: "Lobi ayarlanmamış!"
+  player-not-found: "Oyuncu bulunamadı veya çevrimdışı."
+  console-usage: "Konsoldan kullanımda bir oyuncu belirtmelisiniz."
+
+stats:
+  header: "<newline><gradient:#FFD700:#FFA500><bold>İSTATİSTİKLER</bold></gradient> <dark_gray>▪</dark_gray> <yellow>%player%</yellow>"
+  wins: "<gray>⚔ Zafer:</gray> <green>%amount%</green>"
+  losses: "<gray>☠ Yenilgi:</gray> <red>%amount%</red>"
+  kills: "<gray>🗡 Öldürme:</gray> <green>%amount%</green>"
+  deaths: "<gray>💀 Ölme:</gray> <red>%amount%</red>"
+  kd: "<gray>📊 K/D Oranı:</gray> <gold>%ratio%</gold>"
+
+queue:
+  join: "<yellow>%kit%</yellow> sırasına katıldınız <dark_gray>(%type%)</dark_gray>"
+  leave: "Sıradan ayrıldınız."
+  already-in: "Zaten bir sıradasınız!"
+  not-in: "Herhangi bir sırada değilsiniz."
+  info: "Sıradaki oyuncular: <aqua>%count%/%required%"
+
+duel:
+  start: "<yellow>%opponent%</yellow> ile <aqua>%kit%</aqua> kiti kullanılarak düello başladı!"
+  end-winner: "<yellow>%opponent%</yellow> karşısında kazandınız!"
+  end-loser: "<yellow>%opponent%</yellow> karşısında kaybettiniz."
+  kit-not-found: "Kit <yellow>%kit%</yellow> bulunamadı!"
+  already-in-duel: "Zaten bir düellodasınız!"
+  blocked-command: "Düello sırasında bu komutu kullanamazsınız!"
+  opponent-quit: "Rakip oyundan ayrıldı. Kazandınız!"
+
+admin:
+  kit-created: "<yellow>%kit%</yellow> kiti envanterinizden oluşturuldu."
+  arena-created: "Arena %name% oluşturuldu. Lütfen doğma noktalarını ayarlayın (1, 2, spectator)."
+  spawn-set: "Arena %name% için %type% noktası ayarlandı."
+
+editor:
+  kit-not-found: "Kit bulunamadı."
+  instructions: "Envanterinizi düzenleyin. Kaydetmek için <green>Zümrüt Bloğa</green> (Envanter) tıklayın."
+  saved: "Kit düzeni kaydedildi!"
+  saved: "Kit düzeni kaydedildi!"
+  cancelled: "Düzenleme iptal edildi."
+
+gui:
+  queue:
+    title: "<gradient:#FFD700:#FFA500><bold>Bir Kit Seç</bold></gradient>"
+    item-name: "<yellow>%kit%</yellow>"
+    lore:
+      - "<gray>Sıraya girmek için tıkla"
+      - ""
+      - "<green>Sıra: <white>%count%</white>"
+  editor:
+    title: "<gradient:#00AAFF:#00FFFF><bold>Kit Düzenleyici</bold></gradient>"
+    save-button: "<green><bold>KAYDET & ÇIK</bold>"
+
+titles:
+  duel-start:
+    title: "<green>DÖVÜŞ!"
+    subtitle: "<gray>Bol şans!"
+  duel-end:
+    title: "<gold>ZAFER!"
+    subtitle: "<yellow>Kazanan: <white>%winner%"
+  countdown:
+    title: "<yellow>%count%"

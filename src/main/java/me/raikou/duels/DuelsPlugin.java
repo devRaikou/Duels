@@ -3,6 +3,7 @@ package me.raikou.duels;
 import lombok.Getter;
 import me.raikou.duels.arena.ArenaManager;
 import me.raikou.duels.duel.DuelManager;
+import me.raikou.duels.manager.LanguageManager;
 import me.raikou.duels.kit.KitManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -33,6 +34,8 @@ public class DuelsPlugin extends JavaPlugin {
     private me.raikou.duels.world.WorldManager worldManager;
     @Getter
     private me.raikou.duels.discord.DiscordManager discordManager;
+    @Getter
+    private LanguageManager languageManager;
 
     @Override
     public void onEnable() {
@@ -52,7 +55,9 @@ public class DuelsPlugin extends JavaPlugin {
         this.statsManager = new me.raikou.duels.stats.StatsManager(this);
         this.kitEditorManager = new me.raikou.duels.editor.KitEditorManager(this);
         this.worldManager = new me.raikou.duels.world.WorldManager(this);
+        this.worldManager = new me.raikou.duels.world.WorldManager(this);
         this.discordManager = new me.raikou.duels.discord.DiscordManager(this);
+        this.languageManager = new LanguageManager(this);
 
         // Storage
         String type = getConfig().getString("storage.type", "sqlite");

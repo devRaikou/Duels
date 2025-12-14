@@ -26,8 +26,10 @@ public class KitEditorManager implements Listener {
     private final DuelsPlugin plugin;
     // UUID -> KitName (Being edited)
     private final Map<UUID, String> editingPlayers = new HashMap<>();
-    private final net.kyori.adventure.text.Component GUI_TITLE = MiniMessage.miniMessage()
-            .deserialize("<gradient:#00AAFF:#00FFFF><bold>Kit Editor</bold></gradient>");
+
+    private net.kyori.adventure.text.Component getGuiTitle() {
+        return MiniMessage.miniMessage().deserialize(plugin.getLanguageManager().getMessage("gui.editor.title"));
+    }
 
     public KitEditorManager(DuelsPlugin plugin) {
         this.plugin = plugin;
@@ -45,7 +47,7 @@ public class KitEditorManager implements Listener {
             rows = 1;
         int size = Math.min(rows * 9, 54);
 
-        Inventory inv = Bukkit.createInventory(null, size, GUI_TITLE);
+        Inventory inv = Bukkit.createInventory(null, size, getGuiTitle());
 
         int index = 0;
         for (Map.Entry<String, Kit> entry : plugin.getKitManager().getKits().entrySet()) {
@@ -77,7 +79,7 @@ public class KitEditorManager implements Listener {
     public void startEditing(Player player, String kitName) {
         Kit kit = plugin.getKitManager().getKit(kitName);
         if (kit == null) {
-            MessageUtil.sendError(player, "Kit not found.");
+            MessageUtil.sendError(player, "editor.kit-not-found");
             return;
         }
 
@@ -101,12 +103,12 @@ public class KitEditorManager implements Listener {
                 // Give "Save" Button
                 ItemStack save = new ItemStack(Material.EMERALD_BLOCK);
                 ItemMeta meta = save.getItemMeta();
-                meta.displayName(MiniMessage.miniMessage().deserialize("<green><bold>SAVE & EXIT</bold>"));
+                meta.displayName(MiniMessage.miniMessage()
+                        .deserialize(plugin.getLanguageManager().getMessage("gui.editor.save-button")));
                 save.setItemMeta(meta);
                 player.getInventory().setItem(35, save); // Slot 35 (Bottom Right of Inventory)
 
-                MessageUtil.sendInfo(player,
-                        "Rearrange your inventory. Click the <green>Emerald Block</green> (Inventory) to save.");
+                MessageUtil.sendInfo(player, "editor.instructions");
             });
         });
     }
@@ -136,14 +138,14 @@ public class KitEditorManager implements Listener {
         }
 
         plugin.getStorage().saveKitLayout(player.getUniqueId(), kitName, layoutData.toString());
-        MessageUtil.sendSuccess(player, "Kit layout saved!");
+        MessageUtil.sendSuccess(player, "editor.saved");
 
         restoreLobby(player);
     }
 
     public void cancelEditing(Player player) {
         if (editingPlayers.remove(player.getUniqueId()) != null) {
-            MessageUtil.sendError(player, "Editing cancelled.");
+            MessageUtil.sendError(player, "editor.cancelled");
             restoreLobby(player);
         }
     }
@@ -284,7 +286,7 @@ public class KitEditorManager implements Listener {
         if (!(event.getWhoClicked() instanceof Player player))
             return;
 
-        if (event.getView().title().equals(GUI_TITLE)) {
+        if (event.getView().title().equals(getGuiTitle())) {
             event.setCancelled(true);
             ItemStack clicked = event.getCurrentItem();
             if (clicked == null || clicked.getType() == Material.AIR)

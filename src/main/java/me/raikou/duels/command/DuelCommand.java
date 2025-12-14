@@ -21,7 +21,7 @@ public class DuelCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
             @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command.");
+            me.raikou.duels.util.MessageUtil.sendError(sender, "general.only-players");
             return true;
         }
 
@@ -52,7 +52,7 @@ public class DuelCommand implements CommandExecutor {
 
             case "admin":
                 if (!player.hasPermission("duels.admin")) {
-                    me.raikou.duels.util.MessageUtil.sendError(player, "You do not have permission.");
+                    me.raikou.duels.util.MessageUtil.sendError(player, "general.no-permission");
                     return true;
                 }
                 if (args.length < 2) {
@@ -63,7 +63,7 @@ public class DuelCommand implements CommandExecutor {
                 break;
 
             default:
-                me.raikou.duels.util.MessageUtil.sendError(player, "Unknown subcommand.");
+                me.raikou.duels.util.MessageUtil.sendError(player, "general.unknown-command");
                 break;
         }
 
@@ -75,16 +75,17 @@ public class DuelCommand implements CommandExecutor {
 
         if (sub.equals("reload")) {
             plugin.reloadConfig();
+            plugin.getLanguageManager().loadLanguage();
             plugin.getArenaManager().loadArenas();
             plugin.getKitManager().loadKits();
             plugin.getLobbyManager().loadLobby();
-            me.raikou.duels.util.MessageUtil.sendSuccess(player, "Configuration reloaded successfully.");
+            me.raikou.duels.util.MessageUtil.sendSuccess(player, "general.config-reloaded");
             return;
         }
 
         if (sub.equals("setlobby")) {
             plugin.getLobbyManager().setLobby(player.getLocation());
-            me.raikou.duels.util.MessageUtil.sendSuccess(player, "Lobby location has been set!");
+            me.raikou.duels.util.MessageUtil.sendSuccess(player, "general.lobby-set");
             return;
         }
 
@@ -99,7 +100,7 @@ public class DuelCommand implements CommandExecutor {
             if (action.equals("create")) {
                 plugin.getKitManager().createKit(name, player);
                 me.raikou.duels.util.MessageUtil.sendSuccess(player,
-                        "Kit <yellow>" + name + "</yellow> created from your inventory.");
+                        "admin.kit-created", "%kit%", name);
             }
             return;
         }
@@ -116,7 +117,7 @@ public class DuelCommand implements CommandExecutor {
                 plugin.getConfig().set("arenas." + name + ".world", player.getWorld().getName());
                 plugin.saveConfig();
                 plugin.getArenaManager().loadArenas();
-                player.sendMessage("Arena " + name + " created. Please set spawns (1, 2, spectator).");
+                me.raikou.duels.util.MessageUtil.sendSuccess(player, "admin.arena-created", "%name%", name);
             } else if (action.equals("setspawn")) {
                 if (args.length < 5) {
                     player.sendMessage("Usage: /duel admin arena setspawn <name> <1|2|spectator>");
@@ -146,7 +147,7 @@ public class DuelCommand implements CommandExecutor {
 
                 plugin.saveConfig();
                 plugin.getArenaManager().loadArenas();
-                player.sendMessage("Spawn " + type + " set for arena " + name + ".");
+                me.raikou.duels.util.MessageUtil.sendSuccess(player, "admin.spawn-set", "%type%", type, "%name%", name);
             }
         }
     }

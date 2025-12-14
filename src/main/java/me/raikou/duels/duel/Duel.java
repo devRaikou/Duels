@@ -27,11 +27,13 @@ public class Duel {
     private DuelState state;
     @Getter
     private long startTime;
+    private final String kitName;
 
-    public Duel(DuelsPlugin plugin, Arena arena, List<UUID> players, org.bukkit.World instanceWorld) {
+    public Duel(DuelsPlugin plugin, Arena arena, List<UUID> players, String kitName, org.bukkit.World instanceWorld) {
         this.plugin = plugin;
         this.arena = arena;
         this.players = players;
+        this.kitName = kitName;
         this.alivePlayers = new ArrayList<>(players);
         this.state = DuelState.STARTING;
         this.instanceWorld = instanceWorld;
@@ -67,9 +69,12 @@ public class Duel {
                         Player p = Bukkit.getPlayer(uuid);
                         if (p != null) {
                             p.showTitle(net.kyori.adventure.title.Title.title(
-                                    me.raikou.duels.util.MessageUtil.parse("<green>FIGHT!"),
-                                    me.raikou.duels.util.MessageUtil.parse("<gray>Good luck!")));
-                            p.sendMessage(me.raikou.duels.util.MessageUtil.prefix("<green>Duel Started!"));
+                                    me.raikou.duels.util.MessageUtil.getRaw("titles.duel-start.title"),
+                                    me.raikou.duels.util.MessageUtil.getRaw("titles.duel-start.subtitle")));
+                            p.sendMessage(me.raikou.duels.util.MessageUtil.get("duel.start", "%opponent%",
+                                    players.get(0).equals(uuid) ? Bukkit.getPlayer(players.get(1)).getName()
+                                            : Bukkit.getPlayer(players.get(0)).getName(),
+                                    "%kit%", kitName));
                         }
                     }
                     cancel();
@@ -80,7 +85,8 @@ public class Duel {
                     Player p = Bukkit.getPlayer(uuid);
                     if (p != null) {
                         p.showTitle(net.kyori.adventure.title.Title.title(
-                                me.raikou.duels.util.MessageUtil.parse("<yellow>" + count),
+                                me.raikou.duels.util.MessageUtil.getRaw("titles.countdown.title", "%count%",
+                                        String.valueOf(count)),
                                 Component.empty()));
                         p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 2f);
                     }
@@ -155,10 +161,24 @@ public class Duel {
                 }
 
                 p.showTitle(net.kyori.adventure.title.Title.title(
-                        me.raikou.duels.util.MessageUtil.parse("<gold>VICTORY!"),
-                        me.raikou.duels.util.MessageUtil.parse("<yellow>Winner: <white>" + winnerName)));
-                p.sendMessage(
-                        me.raikou.duels.util.MessageUtil.prefix("<gold>Duel Ended! Winner: <yellow>" + winnerName));
+                        me.raikou.duels.util.MessageUtil.getRaw("titles.duel-end.title"),
+                        me.raikou.duels.util.MessageUtil.getRaw("titles.duel-end.subtitle", "%winner%", winnerName)));
+                if (uuid.equals(winner)) {
+                    // Logic to find the opponent name for the winner
+                    String opponentName = "Unknown";
+                    for (UUID other : players) {
+                        if (!other.equals(winner)) {
+                            Player op = Bukkit.getPlayer(other);
+                            if (op != null)
+                                opponentName = op.getName();
+                            break;
+                        }
+                    }
+                    p.sendMessage(me.raikou.duels.util.MessageUtil.get("duel.end-winner", "%opponent%",
+                            opponentName));
+                } else {
+                    p.sendMessage(me.raikou.duels.util.MessageUtil.get("duel.end-loser", "%opponent%", winnerName));
+                }
             }
         }
 

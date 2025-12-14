@@ -20,8 +20,11 @@ import java.util.Map;
 public class GuiManager implements Listener {
 
     private final DuelsPlugin plugin;
-    private final Component GUI_TITLE = MiniMessage.miniMessage()
-            .deserialize("<gradient:#FFD700:#FFA500><bold>Select a Kit</bold></gradient>");
+
+    private Component getGuiTitle() {
+        String titleRaw = plugin.getLanguageManager().getMessage("gui.queue.title");
+        return MiniMessage.miniMessage().deserialize(titleRaw);
+    }
 
     public GuiManager(DuelsPlugin plugin) {
         this.plugin = plugin;
@@ -36,7 +39,7 @@ public class GuiManager implements Listener {
             rows = 1;
         int size = Math.min(rows * 9, 54);
 
-        Inventory inv = Bukkit.createInventory(null, size, GUI_TITLE);
+        Inventory inv = Bukkit.createInventory(null, size, getGuiTitle());
 
         int index = 0;
         for (Map.Entry<String, Kit> entry : plugin.getKitManager().getKits().entrySet()) {
@@ -53,12 +56,18 @@ public class GuiManager implements Listener {
 
             ItemMeta meta = icon.getItemMeta();
             if (meta != null) {
-                meta.displayName(MiniMessage.miniMessage().deserialize("<yellow>" + kitName));
-                meta.lore(java.util.List.of(
-                        MiniMessage.miniMessage().deserialize("<gray>Click to join queue"),
-                        MiniMessage.miniMessage().deserialize(""),
-                        MiniMessage.miniMessage().deserialize(
-                                "<green>Queue: <white>" + plugin.getQueueManager().getQueueSize(kitName))));
+                // Name
+                String nameFormat = plugin.getLanguageManager().getMessage("gui.queue.item-name");
+                nameFormat = nameFormat.replace("%kit%", kitName);
+                meta.displayName(MiniMessage.miniMessage().deserialize(nameFormat));
+
+                // Lore
+                java.util.List<Component> lore = new java.util.ArrayList<>();
+                for (String line : plugin.getLanguageManager().getList("gui.queue.lore")) {
+                    line = line.replace("%count%", String.valueOf(plugin.getQueueManager().getQueueSize(kitName)));
+                    lore.add(MiniMessage.miniMessage().deserialize(line));
+                }
+                meta.lore(lore);
                 icon.setItemMeta(meta);
             }
 
@@ -71,7 +80,7 @@ public class GuiManager implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getView().title().equals(GUI_TITLE)) {
+        if (event.getView().title().equals(getGuiTitle())) {
             event.setCancelled(true);
 
             if (event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR)

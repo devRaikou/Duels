@@ -8,29 +8,46 @@ import org.bukkit.configuration.file.FileConfiguration;
 public class MessageUtil {
 
     private static final MiniMessage mm = MiniMessage.miniMessage();
-    private static final String PREFIX = "<gradient:#FFD700:#FFA500><bold>Duels</bold></gradient> <dark_gray>»</dark_gray> ";
+    private static final String PREFIX_KEY = "prefix";
 
     public static Component parse(String text) {
         return mm.deserialize(text);
     }
 
-    public static Component prefix(String text) {
-        return mm.deserialize(PREFIX + text);
+    public static Component get(String key, String... replacements) {
+        String msg = getMessageString(key, replacements);
+        return mm.deserialize(
+                me.raikou.duels.DuelsPlugin.getInstance().getLanguageManager().getMessage(PREFIX_KEY) + msg);
     }
 
-    public static void send(CommandSender sender, String text) {
-        sender.sendMessage(prefix(text));
+    public static Component getRaw(String key, String... replacements) {
+        String msg = getMessageString(key, replacements);
+        return mm.deserialize(msg);
     }
 
-    public static void sendError(CommandSender sender, String text) {
-        sender.sendMessage(prefix("<red>" + text));
+    private static String getMessageString(String key, String... replacements) {
+        String msg = me.raikou.duels.DuelsPlugin.getInstance().getLanguageManager().getMessage(key);
+        for (int i = 0; i < replacements.length; i += 2) {
+            if (i + 1 < replacements.length) {
+                msg = msg.replace(replacements[i], replacements[i + 1]);
+            }
+        }
+        return msg;
     }
 
-    public static void sendSuccess(CommandSender sender, String text) {
-        sender.sendMessage(prefix("<green>" + text));
+    public static void send(CommandSender sender, String key, String... replacements) {
+        sender.sendMessage(get(key, replacements));
     }
 
-    public static void sendInfo(CommandSender sender, String text) {
-        sender.sendMessage(prefix("<gray>" + text));
+    public static void sendError(CommandSender sender, String key, String... replacements) {
+        sender.sendMessage(get(key, replacements));
+    }
+
+    public static void sendSuccess(CommandSender sender, String key, String... replacements) {
+        sender.sendMessage(get(key, replacements));
+    }
+
+    public static void sendInfo(CommandSender sender, String key, String... replacements) {
+        sender.sendMessage(get(key, replacements));
     }
 }

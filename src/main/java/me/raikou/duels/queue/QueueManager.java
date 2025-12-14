@@ -22,23 +22,23 @@ public class QueueManager {
 
     public void addToQueue(Player player, String kitName, QueueType type) {
         if (isInQueue(player)) {
-            me.raikou.duels.util.MessageUtil.sendError(player, "You are already in a queue!");
+            me.raikou.duels.util.MessageUtil.sendError(player, "queue.already-in");
             return;
         }
 
         // Check if kit exists
         Kit kit = plugin.getKitManager().getKit(kitName);
         if (kit == null) {
-            me.raikou.duels.util.MessageUtil.sendError(player, "Kit <yellow>" + kitName + "</yellow> not found!");
+            me.raikou.duels.util.MessageUtil.sendError(player, "duel.kit-not-found", "%kit%", kitName);
             return;
         }
 
         // Add to queue
         queues.get(type).computeIfAbsent(kitName, k -> new LinkedList<>()).add(player.getUniqueId());
-        me.raikou.duels.util.MessageUtil.sendSuccess(player,
-                "Joined queue for <yellow>" + kitName + "</yellow> <dark_gray>(" + type.name() + ")</dark_gray>");
-        me.raikou.duels.util.MessageUtil.sendInfo(player,
-                "Players in queue: <aqua>" + queues.get(type).get(kitName).size() + "/" + type.getRequiredPlayers());
+        me.raikou.duels.util.MessageUtil.sendSuccess(player, "queue.join", "%kit%", kitName, "%type%", type.name());
+        me.raikou.duels.util.MessageUtil.sendInfo(player, "queue.info", "%count%",
+                String.valueOf(queues.get(type).get(kitName).size()), "%required%",
+                String.valueOf(type.getRequiredPlayers()));
 
         // Check if enough players
         checkQueue(kitName, type);
@@ -48,12 +48,12 @@ public class QueueManager {
         for (QueueType type : QueueType.values()) {
             for (List<UUID> list : queues.get(type).values()) {
                 if (list.remove(player.getUniqueId())) {
-                    me.raikou.duels.util.MessageUtil.sendSuccess(player, "You have been removed from the queue.");
+                    me.raikou.duels.util.MessageUtil.sendSuccess(player, "queue.leave");
                     return;
                 }
             }
         }
-        me.raikou.duels.util.MessageUtil.sendError(player, "You are not in any queue.");
+        me.raikou.duels.util.MessageUtil.sendError(player, "queue.not-in");
     }
 
     private void checkQueue(String kitName, QueueType type) {

@@ -30,12 +30,12 @@ public class StatsCommand implements CommandExecutor {
         if (args.length > 0) {
             target = Bukkit.getPlayer(args[0]);
             if (target == null) {
-                MessageUtil.sendError(sender, "Player not found or offline.");
+                me.raikou.duels.util.MessageUtil.sendError(sender, "general.player-not-found");
                 return true;
             }
         } else {
             if (!(sender instanceof Player)) {
-                sender.sendMessage("Console must specify a player.");
+                me.raikou.duels.util.MessageUtil.sendError(sender, "general.console-usage");
                 return true;
             }
             target = (Player) sender;
@@ -51,14 +51,13 @@ public class StatsCommand implements CommandExecutor {
             kdRatio = stats.getKills();
         }
 
-        sender.sendMessage(MessageUtil.parse(
-                "<newline><gradient:#FFD700:#FFA500><bold>STATISTICS</bold></gradient> <dark_gray>▪</dark_gray> <yellow>"
-                        + target.getName() + "</yellow>"));
-        sender.sendMessage(MessageUtil.parse("<gray>⚔ Wins:</gray> <green>" + stats.getWins() + "</green>"));
-        sender.sendMessage(MessageUtil.parse("<gray>☠ Losses:</gray> <red>" + stats.getLosses() + "</red>"));
-        sender.sendMessage(MessageUtil.parse("<gray>🗡 Kills:</gray> <green>" + stats.getKills() + "</green>"));
-        sender.sendMessage(MessageUtil.parse("<gray>💀 Deaths:</gray> <red>" + stats.getDeaths() + "</red>"));
-        sender.sendMessage(MessageUtil.parse("<gray>📊 K/D Ratio:</gray> <gold>" + df.format(kdRatio) + "</gold>"));
+        sender.sendMessage(
+                MessageUtil.getRaw("stats.header", "%player%", target.getName()));
+        sender.sendMessage(MessageUtil.getRaw("stats.wins", "%amount%", String.valueOf(stats.getWins())));
+        sender.sendMessage(MessageUtil.getRaw("stats.losses", "%amount%", String.valueOf(stats.getLosses())));
+        sender.sendMessage(MessageUtil.getRaw("stats.kills", "%amount%", String.valueOf(stats.getKills())));
+        sender.sendMessage(MessageUtil.getRaw("stats.deaths", "%amount%", String.valueOf(stats.getDeaths())));
+        sender.sendMessage(MessageUtil.getRaw("stats.kd", "%ratio%", df.format(kdRatio)));
         sender.sendMessage(MessageUtil.parse(" ")); // Empty line footer
 
         return true;
