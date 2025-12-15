@@ -4,6 +4,7 @@ import me.raikou.duels.DuelsPlugin;
 import me.raikou.duels.duel.Duel;
 import me.raikou.duels.stats.PlayerStats;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.cacheddata.CachedMetaData;
@@ -200,32 +201,53 @@ public class TabManager implements Listener {
             return;
         }
 
-        List<String> groupOrder = plugin.getConfig().getStringList("tab.sorting.group-order");
-        if (groupOrder.isEmpty()) {
+        // Skip if player is in a duel (NametagManager handles them)
+        if (plugin.getDuelManager().isInDuel(player)) {
             return;
         }
 
+        List<String> groupOrder = plugin.getConfig().getStringList("tab.sorting.group-order");
+
         // Get player's primary group
         String playerGroup = "default";
+        String prefix = "";
+        String suffix = "";
+
         if (luckPermsEnabled && luckPerms != null) {
             User user = luckPerms.getUserManager().getUser(player.getUniqueId());
-            if (user != null && user.getPrimaryGroup() != null) {
-                playerGroup = user.getPrimaryGroup();
+            if (user != null) {
+                CachedMetaData metaData = user.getCachedData().getMetaData();
+                if (user.getPrimaryGroup() != null) {
+                    playerGroup = user.getPrimaryGroup();
+                }
+                prefix = metaData.getPrefix() != null ? metaData.getPrefix() : "";
+                suffix = metaData.getSuffix() != null ? metaData.getSuffix() : "";
             }
         }
 
         // Find group index (lower = higher priority in TAB)
-        int priority = groupOrder.size();
-        for (int i = 0; i < groupOrder.size(); i++) {
-            if (groupOrder.get(i).equalsIgnoreCase(playerGroup)) {
-                priority = i;
-                break;
+        int priority = 99;
+        if (!groupOrder.isEmpty()) {
+            priority = groupOrder.size();
+            for (int i = 0; i < groupOrder.size(); i++) {
+                if (groupOrder.get(i).equalsIgnoreCase(playerGroup)) {
+                    priority = i;
+                    break;
+                }
             }
         }
 
-        // Team name format: priority number (00-99)
-        String teamName = String.format("%02d", priority);
+        // Team name format: priority_PlayerName (Unique per player to support
+        // individual prefixes)
+        // e.g. 00_Raikou
+        String teamName = String.format("%02d_%s", priority, player.getName());
+        if (teamName.length() > 64) {
+            teamName = teamName.substring(0, 64);
+        }
+
         String playerName = player.getName();
+        final Component prefixComp = MessageUtil.parse(prefix);
+        final Component suffixComp = MessageUtil.parse(suffix);
 
         // Store team for this player
         playerTeams.put(player.getUniqueId(), teamName);
@@ -241,9 +263,18 @@ public class TabManager implements Listener {
             }
 
             // Remove player from old teams on this board
-            for (Team existingTeam : board.getTeams()) {
-                if (existingTeam.hasEntry(playerName)) {
-                    existingTeam.removeEntry(playerName);
+            // We only need to check validation if they are in a different team
+            Team existingTeam = board.getEntryTeam(playerName);
+            if (existingTeam != null && !existingTeam.getName().equals(teamName)) {
+                existingTeam.removeEntry(playerName);
+                // If the old team was essentially just for this player (format 00_Name), we
+                // could unregister it?
+                // But for simplicity/stability, we leave it or rely on cleanup.
+                if (existingTeam.getName().matches("\\d{2}_" + java.util.regex.Pattern.quote(playerName))) {
+                    try {
+                        existingTeam.unregister();
+                    } catch (Exception ignored) {
+                    }
                 }
             }
 
@@ -252,7 +283,33 @@ public class TabManager implements Listener {
             if (team == null) {
                 team = board.registerNewTeam(teamName);
                 team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
+                // Collision rule never to prevent pushing in lobby
+                team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
             }
+
+            // Determine Color from Meta "color" (e.g. red, dark_red, #ff0000)
+            NamedTextColor nameColor = NamedTextColor.WHITE; // Default
+
+            if (luckPermsEnabled && luckPerms != null) {
+                User user = luckPerms.getUserManager().getUser(player.getUniqueId());
+                if (user != null) {
+                    String colorName = user.getCachedData().getMetaData().getMetaValue("color");
+                    if (colorName != null) {
+                        NamedTextColor matched = NamedTextColor.NAMES.value(colorName.toLowerCase().replace(" ", "_"));
+                        if (matched != null) {
+                            nameColor = matched;
+                        }
+                    }
+                }
+            }
+
+            // Set Color
+            team.color(nameColor);
+
+            // Update Prefix/Suffix
+            // We set this every time because prefix might change even if team checks out
+            team.prefix(prefixComp);
+            team.suffix(suffixComp);
 
             // Add player to team
             if (!team.hasEntry(playerName)) {

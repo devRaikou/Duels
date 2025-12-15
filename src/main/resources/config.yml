@@ -419,7 +419,7 @@ tab:
   # Player list name formatting (shows in TAB player list)
   player-list:
     enabled: true
-    format: "%prefix%<white>%player%</white>%suffix%"
+    format: "%prefix%%player%%suffix%"
   # Player sorting in TAB (requires LuckPerms)
   # Groups listed first appear at the top of TAB
   sorting:

@@ -202,6 +202,9 @@ public class Duel {
                 } else {
                     p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
                 }
+
+                // Restore Tab/Nametags immediately
+                plugin.getTabManager().updatePlayerSorting(p);
             }
         }
 
