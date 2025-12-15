@@ -65,6 +65,9 @@ gui:
   editor:
     title: "<gradient:#00AAFF:#00FFFF><bold>Kit Editor</bold></gradient>"
     save-button: "<green><bold>SAVE & EXIT</bold>"
+    item-name: "<gradient:#FFD700:#FDB931><bold>%kit%</bold></gradient>"
+    lore-edit: "<gray>Edit your layout for <yellow>%kit%</yellow></gray>"
+    lore-click: "<green>➤ Click to Edit</green>"
   leaderboard:
     title: "<gradient:#FFD700:#FFA500><bold>Leaderboard</bold></gradient>"
     rank-1: "<gold><bold>#1</bold></gold> <yellow>%player%"

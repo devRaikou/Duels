@@ -65,6 +65,9 @@ gui:
   editor:
     title: "<gradient:#00AAFF:#00FFFF><bold>Kit Düzenleyici</bold></gradient>"
     save-button: "<green><bold>KAYDET & ÇIK</bold>"
+    item-name: "<gradient:#FFD700:#FDB931><bold>%kit%</bold></gradient>"
+    lore-edit: "<gray><yellow>%kit%</yellow> için düzenini ayarla</gray>"
+    lore-click: "<green>➤ Düzenlemek için Tıkla</green>"
   leaderboard:
     title: "<gradient:#FFD700:#FFA500><bold>Lider Tablosu</bold></gradient>"
     rank-1: "<gold><bold>#1</bold></gold> <yellow>%player%"

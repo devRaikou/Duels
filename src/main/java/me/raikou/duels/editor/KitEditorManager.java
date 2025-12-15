@@ -41,35 +41,70 @@ public class KitEditorManager implements Listener {
     }
 
     public void openEditorSelectionGui(Player player) {
-        int kitCount = plugin.getKitManager().getKits().size();
-        int rows = (int) Math.ceil(kitCount / 9.0);
-        if (rows == 0)
-            rows = 1;
-        int size = Math.min(rows * 9, 54);
-
+        int size = 54;
         Inventory inv = Bukkit.createInventory(null, size, getGuiTitle());
+
+        // Fill borders with Gray Stained Glass Panes
+        ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.displayName(net.kyori.adventure.text.Component.empty());
+        filler.setItemMeta(fillerMeta);
+
+        int[] borders = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52,
+                53 };
+        for (int slot : borders) {
+            inv.setItem(slot, filler);
+        }
+
+        // Available slots for kits
+        // Rows 2, 3, 4, 5 (indices 10-16, 19-25, 28-34, 37-43)
+        // Actually let's just fill sequentially in the middle area
+        int[] kitSlots = {
+                10, 11, 12, 13, 14, 15, 16,
+                19, 20, 21, 22, 23, 24, 25,
+                28, 29, 30, 31, 32, 33, 34,
+                37, 38, 39, 40, 41, 42, 43
+        };
 
         int index = 0;
         for (Map.Entry<String, Kit> entry : plugin.getKitManager().getKits().entrySet()) {
-            if (index >= size)
-                break;
+            if (index >= kitSlots.length)
+                break; // Limit reached, would need pagination
 
             String kitName = entry.getKey();
             Kit kit = entry.getValue();
 
-            ItemStack icon = new ItemStack(Material.PAPER);
-            if (kit.getItems() != null && !kit.getItems().isEmpty()) {
-                icon = kit.getItems().get(0).clone();
+            // Use the configured icon!
+            ItemStack icon = new ItemStack(kit.getIcon());
+            // If icon is AIR (failsafe), fallback to Paper
+            if (icon.getType() == Material.AIR) {
+                icon = new ItemStack(Material.PAPER);
             }
 
             ItemMeta meta = icon.getItemMeta();
             if (meta != null) {
-                meta.displayName(MiniMessage.miniMessage().deserialize("<yellow>" + kitName));
-                meta.lore(java.util.List.of(
-                        MiniMessage.miniMessage().deserialize("<gray>Click to edit layout")));
+                // Localized Name
+                String nameFormat = plugin.getLanguageManager().getMessage("gui.editor.item-name");
+                meta.displayName(MiniMessage.miniMessage()
+                        .deserialize(nameFormat.replace("%kit%", kitName)));
+
+                // Localized Lore
+                java.util.List<net.kyori.adventure.text.Component> lore = new java.util.ArrayList<>();
+                lore.add(net.kyori.adventure.text.Component.empty());
+
+                String editFormat = plugin.getLanguageManager().getMessage("gui.editor.lore-edit");
+                lore.add(MiniMessage.miniMessage()
+                        .deserialize(editFormat.replace("%kit%", kitName)));
+
+                lore.add(net.kyori.adventure.text.Component.empty());
+
+                String clickFormat = plugin.getLanguageManager().getMessage("gui.editor.lore-click");
+                lore.add(MiniMessage.miniMessage().deserialize(clickFormat));
+
+                meta.lore(lore);
                 icon.setItemMeta(meta);
             }
-            inv.setItem(index, icon);
+            inv.setItem(kitSlots[index], icon);
             index++;
         }
 
@@ -289,7 +324,8 @@ public class KitEditorManager implements Listener {
         if (event.getView().title().equals(getGuiTitle())) {
             event.setCancelled(true);
             ItemStack clicked = event.getCurrentItem();
-            if (clicked == null || clicked.getType() == Material.AIR)
+            if (clicked == null || clicked.getType() == Material.AIR
+                    || clicked.getType() == Material.GRAY_STAINED_GLASS_PANE)
                 return;
 
             // Kit selection logic
