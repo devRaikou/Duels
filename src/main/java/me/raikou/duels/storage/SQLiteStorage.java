@@ -90,13 +90,22 @@ public class SQLiteStorage implements Storage {
             e.printStackTrace();
         }
 
-        // ELO ratings table
-        try (PreparedStatement ps = connection.prepareStatement(
-                "CREATE TABLE IF NOT EXISTS elo_ratings (" +
-                        "uuid VARCHAR(36), " +
-                        "kit_name VARCHAR(64), " +
-                        "elo INT DEFAULT 1000, " +
-                        "PRIMARY KEY (uuid, kit_name))")) {
+        // Punishments table
+        try (
+                PreparedStatement ps = connection.prepareStatement(
+                        "CREATE TABLE IF NOT EXISTS duels_punishments (" +
+                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                "uuid VARCHAR(36) NOT NULL, " +
+                                "player_name VARCHAR(32), " +
+                                "issuer_name VARCHAR(32), " +
+                                "type VARCHAR(16) NOT NULL, " +
+                                "reason TEXT, " +
+                                "timestamp BIGINT, " +
+                                "duration BIGINT, " +
+                                "active BOOLEAN, " +
+                                "removed BOOLEAN, " +
+                                "removed_by VARCHAR(32), " +
+                                "removed_reason TEXT)")) {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -306,24 +315,149 @@ public class SQLiteStorage implements Storage {
     }
 
     @Override
-    public CompletableFuture<Integer> getPlayerRank(UUID uuid) {
-        return CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<Void> savePunishment(me.raikou.duels.punishment.Punishment punishment) {
+        return CompletableFuture.runAsync(() -> {
             try (PreparedStatement ps = connection.prepareStatement(
-                    "SELECT COUNT(*) + 1 as rank FROM duel_stats " +
-                            "WHERE wins > (SELECT wins FROM duel_stats WHERE uuid = ?) " +
-                            "OR (wins = (SELECT wins FROM duel_stats WHERE uuid = ?) " +
-                            "AND (wins + losses) > (SELECT wins + losses FROM duel_stats WHERE uuid = ?))")) {
+                    "INSERT INTO duels_punishments (uuid, player_name, issuer_name, type, reason, timestamp, duration, active, removed, removed_by, removed_reason) "
+                            +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?,?)")) {
+                ps.setString(1, punishment.getUuid().toString());
+                ps.setString(2, punishment.getPlayerName());
+                ps.setString(3, punishment.getIssuerName());
+                ps.setString(4, punishment.getType().name());
+                ps.setString(5, punishment.getReason());
+                ps.setLong(6, punishment.getTimestamp());
+                ps.setLong(7, punishment.getDuration());
+                ps.setBoolean(8, punishment.isActive());
+                ps.setBoolean(9, punishment.isRemoved());
+                ps.setString(10, punishment.getRemovedBy());
+                ps.setString(11, punishment.getRemovedReason());
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<me.raikou.duels.punishment.Punishment>> getActivePunishments(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<me.raikou.duels.punishment.Punishment> list = new ArrayList<>();
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT * FROM duels_punishments WHERE uuid=? AND active=1 AND removed=0")) {
                 ps.setString(1, uuid.toString());
-                ps.setString(2, uuid.toString());
-                ps.setString(3, uuid.toString());
                 ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    return rs.getInt("rank");
+                while (rs.next()) {
+                    me.raikou.duels.punishment.Punishment p = new me.raikou.duels.punishment.Punishment(
+                            rs.getInt("id"),
+                            UUID.fromString(rs.getString("uuid")),
+                            rs.getString("player_name"),
+                            rs.getString("issuer_name"),
+                            me.raikou.duels.punishment.PunishmentType.valueOf(rs.getString("type")),
+                            rs.getString("reason"),
+                            rs.getLong("timestamp"),
+                            rs.getLong("duration"),
+                            rs.getBoolean("active"),
+                            rs.getBoolean("removed"),
+                            rs.getString("removed_by"),
+                            rs.getString("removed_reason"));
+                    list.add(p);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            return -1; // Not found
+            return list;
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<me.raikou.duels.punishment.Punishment>> getPunishmentHistory(UUID uuid, int limit) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<me.raikou.duels.punishment.Punishment> list = new ArrayList<>();
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT * FROM duels_punishments WHERE uuid=? ORDER BY id DESC LIMIT ?")) {
+                ps.setString(1, uuid.toString());
+                ps.setInt(2, limit);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    list.add(new me.raikou.duels.punishment.Punishment(
+                            rs.getInt("id"),
+                            UUID.fromString(rs.getString("uuid")),
+                            rs.getString("player_name"),
+                            rs.getString("issuer_name"),
+                            me.raikou.duels.punishment.PunishmentType.valueOf(rs.getString("type")),
+                            rs.getString("reason"),
+                            rs.getLong("timestamp"),
+                            rs.getLong("duration"),
+                            rs.getBoolean("active"),
+                            rs.getBoolean("removed"),
+                            rs.getString("removed_by"),
+                            rs.getString("removed_reason")));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return list;
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> expirePunishment(int id, String removedBy, String reason) {
+        return CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "UPDATE duels_punishments SET active=0, removed=1, removed_by=?, removed_reason=? WHERE id=?")) {
+                ps.setString(1, removedBy);
+                ps.setString(2, reason);
+                ps.setInt(3, id);
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Integer> getPlayerRank(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // First get the player's stats
+                int wins = 0;
+                int games = 0;
+                long lastPlayed = 0;
+                try (PreparedStatement ps = connection.prepareStatement(
+                        "SELECT wins, losses, last_played FROM duel_stats WHERE uuid=?")) {
+                    ps.setString(1, uuid.toString());
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()) {
+                        wins = rs.getInt("wins");
+                        games = wins + rs.getInt("losses");
+                        lastPlayed = rs.getLong("last_played");
+                    } else {
+                        return 0; // Player not found
+                    }
+                }
+
+                // Count players with better stats
+                try (PreparedStatement ps = connection.prepareStatement(
+                        "SELECT COUNT(*) as rank FROM duel_stats WHERE " +
+                                "(wins > ?) OR " +
+                                "(wins = ? AND (wins + losses) > ?) OR " +
+                                "(wins = ? AND (wins + losses) = ? AND last_played > ?)")) {
+                    ps.setInt(1, wins);
+                    ps.setInt(2, wins);
+                    ps.setInt(3, games);
+                    ps.setInt(4, wins);
+                    ps.setInt(5, games);
+                    ps.setLong(6, lastPlayed);
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()) {
+                        return rs.getInt("rank") + 1;
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return 0;
         });
     }
 }

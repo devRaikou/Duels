@@ -62,7 +62,9 @@ public class DoubleJumpHandler implements Listener {
             return;
 
         // Check if on ground and can enable flight
-        if (player.isOnGround() && !player.isFlying()) {
+        @SuppressWarnings("deprecation")
+        boolean onGround = player.isOnGround();
+        if (onGround && !player.isFlying()) {
             player.setAllowFlight(true);
         }
     }

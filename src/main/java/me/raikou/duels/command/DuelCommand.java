@@ -196,7 +196,6 @@ public class DuelCommand implements CommandExecutor, TabCompleter {
                     player.sendMessage("Usage: /duel admin arena setspawn <name> <1|2|spectator>");
                     return;
                 }
-                String name2 = args[3]; // Re-use name variable logic properly or just use args[3]
                 // Wait, logic above used 'name ' variable which is args[3].
 
                 if (!plugin.getConfig().contains("arenas." + name)) {
@@ -277,12 +276,13 @@ public class DuelCommand implements CommandExecutor, TabCompleter {
     private void sendPluginInfo(Player player) {
         player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
                 "<newline><gradient:#FFD700:#FFA500><bold>DUELS CORE</bold></gradient> <gray>v"
-                        + plugin.getDescription().getVersion() + "</gray>"));
+                        + plugin.getPluginMeta().getVersion() + "</gray>"));
         player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
-                "<gray>Created by <yellow>" + plugin.getDescription().getAuthors().get(0) + "</yellow></gray>"));
+                "<gray>Created by <yellow>" + plugin.getPluginMeta().getAuthors().get(0) + "</yellow></gray>"));
         player.sendMessage(me.raikou.duels.util.MessageUtil.parse(
                 "<gray>Type <yellow>/duel help</yellow> for a list of commands.</gray>"));
         player.sendMessage(me.raikou.duels.util.MessageUtil.parse(" "));
+
     }
 
     private void sendHelp(Player player) {

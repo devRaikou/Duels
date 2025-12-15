@@ -61,4 +61,13 @@ public interface Storage {
      * Get player's rank in leaderboard.
      */
     CompletableFuture<Integer> getPlayerRank(UUID uuid);
+
+    // Punishments
+    CompletableFuture<Void> savePunishment(me.raikou.duels.punishment.Punishment punishment);
+
+    CompletableFuture<List<me.raikou.duels.punishment.Punishment>> getActivePunishments(UUID uuid);
+
+    CompletableFuture<List<me.raikou.duels.punishment.Punishment>> getPunishmentHistory(UUID uuid, int limit);
+
+    CompletableFuture<Void> expirePunishment(int id, String removedBy, String reason);
 }

@@ -20,7 +20,6 @@ import org.bukkit.potion.PotionEffectType;
 public class FlightCheck extends AbstractCheck {
 
     private static final int MAX_AIR_TICKS = 60; // 3 seconds (generous for knockback)
-    private static final double MAX_RISE = 1.0; // Max separation from ground
 
     public FlightCheck(DuelsPlugin plugin) {
         super(plugin, "Flight", CheckType.MOVEMENT, "flight");

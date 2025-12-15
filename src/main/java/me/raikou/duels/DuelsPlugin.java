@@ -67,6 +67,8 @@ public class DuelsPlugin extends JavaPlugin {
     @Getter
     private me.raikou.duels.gui.ProfileGui profileGui;
     @Getter
+    private me.raikou.duels.punishment.PunishmentManager punishmentManager;
+    @Getter
     private long enableTime;
 
     @Override
@@ -161,6 +163,11 @@ public class DuelsPlugin extends JavaPlugin {
         this.profileGui = new me.raikou.duels.gui.ProfileGui(this);
 
         getCommand("profile").setExecutor(new me.raikou.duels.command.ProfileCommand(this));
+
+        // Punishment System
+        this.punishmentManager = new me.raikou.duels.punishment.PunishmentManager(this);
+        getServer().getPluginManager().registerEvents(new me.raikou.duels.punishment.PunishmentListener(this), this);
+        getCommand("punish").setExecutor(new me.raikou.duels.punishment.PunishmentCommand(this));
 
         // Lobby Double Jump
         new me.raikou.duels.lobby.DoubleJumpHandler(this);

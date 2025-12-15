@@ -18,7 +18,6 @@ import org.bukkit.util.Vector;
 public class ReachCheck extends AbstractCheck {
 
     private static final double BASE_REACH = 3.1;
-    private static final double MAX_REACH_CREATIVE = 5.2;
     private static final double PING_COMPENSATION_FACTOR = 0.002; // 2ms per 1 ping
     private static final double MOVING_AWAY_BUFFER = 0.3; // Extra buffer if target is running away
 

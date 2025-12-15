@@ -27,6 +27,10 @@ commands:
   profile:
     description: View player profile
     usage: /profile <player>
+  punish:
+    description: Punish a player
+    usage: /punish <player>
+    permission: duels.punish
 permissions:
   duels.admin:
     description: Full admin access to all commands

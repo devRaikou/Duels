@@ -2,7 +2,6 @@ package me.raikou.duels.anticheat.data;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 import java.util.LinkedList;
 import java.util.UUID;
@@ -19,14 +18,12 @@ public class PlayerData {
     // Movement tracking
     private Location lastLocation;
     private Location lastOnGroundLocation;
-    private Vector lastVelocity;
     private boolean onGround;
     private long lastOnGroundTime;
     private int airTicks;
 
     // Combat tracking
     private long lastAttackTime;
-    private int hitsInLastSecond;
     private final LinkedList<Long> clickSamples = new LinkedList<>();
     private long lastVelocityTaken;
 
@@ -38,7 +35,6 @@ public class PlayerData {
         this.uuid = player.getUniqueId();
         this.lastLocation = player.getLocation();
         this.lastOnGroundLocation = player.getLocation();
-        this.lastVelocity = new Vector(0, 0, 0);
         this.onGround = true;
         this.lastOnGroundTime = System.currentTimeMillis();
     }
@@ -58,7 +54,7 @@ public class PlayerData {
         this.airTicks = 0;
         this.clickSamples.clear();
         this.lastAttackTime = 0;
-        this.hitsInLastSecond = 0;
+        this.lastAttackTime = 0;
         this.onGround = true;
     }
 

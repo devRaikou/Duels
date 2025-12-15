@@ -14,7 +14,6 @@ import org.bukkit.util.Vector;
  */
 public class KillAuraCheck extends AbstractCheck {
 
-    private static final double MAX_ANGLE = 50.0; // Standard FOV constraint
     private static final double STRICT_ANGLE = 85.0; // Impossible hits (behind/side)
 
     public KillAuraCheck(DuelsPlugin plugin) {

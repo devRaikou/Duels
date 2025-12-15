@@ -16,7 +16,6 @@ import java.util.LinkedList;
 public class AutoClickerCheck extends AbstractCheck {
 
     private static final int MAX_CPS = 22; // Hard limit for realistic clicking
-    private static final int WARNING_CPS = 18; // Alert limit
 
     public AutoClickerCheck(DuelsPlugin plugin) {
         super(plugin, "AutoClicker", CheckType.COMBAT, "autoclicker");

@@ -119,7 +119,7 @@ public class MotdListener implements Listener {
                 .replace("%spectators%", String.valueOf(countSpectators()))
 
                 // Server info
-                .replace("%version%", plugin.getDescription().getVersion())
+                .replace("%version%", plugin.getPluginMeta().getVersion())
                 .replace("%server_version%", Bukkit.getVersion())
                 .replace("%bukkit_version%", Bukkit.getBukkitVersion())
 
