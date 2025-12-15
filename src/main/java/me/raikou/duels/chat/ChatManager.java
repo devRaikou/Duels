@@ -58,6 +58,18 @@ public class ChatManager implements Listener {
         String rawMessage = PlainTextComponentSerializer.plainText().serialize(event.message());
 
         // Anti-spam checks
+        if (plugin.getPunishmentManager().isMuted(player.getUniqueId())) {
+            event.setCancelled(true);
+            me.raikou.duels.punishment.Punishment mute = plugin.getPunishmentManager()
+                    .getActiveMute(player.getUniqueId());
+            if (mute != null) {
+                long remaining = mute.getExpirationTime() - System.currentTimeMillis();
+                String durationStr = me.raikou.duels.punishment.PunishmentManager.getDurationString(remaining);
+                me.raikou.duels.util.MessageUtil.sendError(player, "punishment.mute-chat", "%duration%", durationStr);
+            }
+            return;
+        }
+
         if (!player.hasPermission(plugin.getConfig().getString("chat.bypass-cooldown", "duels.chat.bypass"))) {
             // Cooldown check
             double cooldown = plugin.getConfig().getDouble("chat.cooldown", 1.5);

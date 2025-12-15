@@ -1,7 +1,7 @@
 package me.raikou.duels.punishment;
 
 import me.raikou.duels.DuelsPlugin;
-import io.papermc.paper.event.player.AsyncChatEvent;
+
 import net.kyori.adventure.text.Component;
 
 import org.bukkit.event.EventHandler;
@@ -39,7 +39,7 @@ public class PunishmentListener implements Listener {
             for (Punishment p : punishments) {
                 if (p.getType() == PunishmentType.BAN && !p.isExpired()) {
                     event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
-                            Component.text(plugin.getPunishmentManager().getBanKickMessage(p)));
+                            me.raikou.duels.util.MessageUtil.parse(plugin.getPunishmentManager().getBanKickMessage(p)));
                     return;
                 }
             }
@@ -60,17 +60,4 @@ public class PunishmentListener implements Listener {
         plugin.getPunishmentManager().unloadPunishments(event.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onChat(AsyncChatEvent event) {
-        Punishment mute = plugin.getPunishmentManager().getActiveMute(event.getPlayer().getUniqueId());
-        if (mute != null) {
-            event.setCancelled(true);
-            event.getPlayer().sendMessage(Component.text()
-                    .append(Component.text("§cYou are muted!\n"))
-                    .append(Component.text("§7Reason: §f" + mute.getReason() + "\n"))
-                    .append(Component.text("§7Expires: §f" + PunishmentManager
-                            .getDurationString(mute.getExpirationTime() - System.currentTimeMillis())))
-                    .build());
-        }
-    }
 }

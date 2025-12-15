@@ -13,6 +13,43 @@ general:
   match-not-found: "Match not found or has expired."
   kit-not-found: "Kit not found."
 
+punishment:
+  ban-alert: "<newline><red><bold>YOU ARE BANNED</bold></red><newline><newline><gray>Reason:</gray> <white>%reason%</white><newline><gray>Banned by:</gray> <white>%issuer%</white><newline><gray>Expires:</gray> <red>NEVER</red><newline><newline><yellow>Appeal at discord.gg/duels</yellow>"
+  temp-ban-alert: "<newline><red><bold>YOU ARE BANNED</bold></red><newline><newline><gray>Reason:</gray> <white>%reason%</white><newline><gray>Banned by:</gray> <white>%issuer%</white><newline><gray>Expires:</gray> <white>%duration%</white><newline><newline><yellow>Appeal at discord.gg/duels</yellow>"
+  kick-alert: "<newline><red><bold>YOU HAVE BEEN KICKED</bold></red><newline><newline><gray>Reason:</gray> <white>%reason%</white><newline><gray>Kicked by:</gray> <white>%issuer%</white><newline><newline><yellow>You may rejoin immediately.</yellow>"
+  mute-alert: "<red>You have been muted by <white>%issuer%</white> for: <white>%reason%</white>"
+  mute-chat: "<red>You are currently muted! Expires in: <white>%duration%</white>"
+  warn-alert: "<newline><red><bold>WARNING RECEIVED</bold></red><newline><gray>Reason:</gray> <white>%reason%</white><newline><gray>Issuer:</gray> <white>%issuer%</white><newline>"
+  broadcast: "<red><bold>PUNISHMENT</bold></red> <dark_gray>»</dark_gray> <yellow>%target%</yellow> <gray>was punished by</gray> <yellow>%issuer%</yellow> <gray>for</gray> <white>%reason%</white>"
+  success: "<green>Punished <yellow>%player%</yellow> <gray>(%type%)</gray>"
+  pardoned: "<green>Pardoned <yellow>%player%</yellow>."
+  usage:
+    history: "<red>Usage: /punish history <player>"
+    ban: "<red>Usage: /punish ban <player> [reason]"
+    tempban: "<red>Usage: /punish tempban <player> <duration> [reason]"
+    mute: "<red>Usage: /punish mute <player> [reason]"
+    tempmute: "<red>Usage: /punish tempmute <player> <duration> [reason]"
+    kick: "<red>Usage: /punish kick <player> [reason]"
+    warn: "<red>Usage: /punish warn <player> [reason]"
+    unban: "<red>Usage: /punish unban <player> [reason]"
+    unmute: "<red>Usage: /punish unmute <player> [reason]"
+  not-found: "<red>Player not found."
+  not-online: "<red>Player is not online."
+  no-record: "<red>No active %type% found for %player%."
+  default-reason: "No reason provided"
+  help:
+    - "<newline><gradient:#FFD700:#FFA500><bold>PUNISHMENT COMMANDS</bold></gradient>"
+    - "<gray>/punish ban <player> [reason]"
+    - "<gray>/punish tempban <player> <duration> [reason]"
+    - "<gray>/punish mute <player> [reason]"
+    - "<gray>/punish tempmute <player> <duration> [reason]"
+    - "<gray>/punish kick <player> [reason]"
+    - "<gray>/punish warn <player> [reason]"
+    - "<gray>/punish unban <player> [reason]"
+    - "<gray>/punish unmute <player> [reason]"
+    - "<gray>/punish history <player>"
+    - ""
+
 stats:
   header: "<newline><gradient:#FFD700:#FFA500><bold>STATISTICS</bold></gradient> <dark_gray>▪</dark_gray> <yellow>%player%</yellow>"
   wins: "<gray>⚔ Wins:</gray> <green>%amount%</green>"
@@ -130,6 +167,21 @@ gui:
       vs: "<gray>Vs: <red>%opponent%"
       unknown: "Unknown"
     close-button: "<red>Close"
+  punishment:
+    title: "<dark_gray>History: %player%"
+    item-name: "<gold>%type% #%id%"
+    status:
+      active: "<red>Active"
+      expired: "<yellow>Expired"
+      pardoned: "<green>Pardoned"
+    lore:
+      status: "<gray>Status: %status%"
+      reason: "<gray>Reason: <white>%reason%"
+      issuer: "<gray>Issuer: <white>%issuer%"
+      date: "<gray>Date: <white>%date%"
+      duration: "<gray>Duration: <white>%duration%"
+      removed-by: "<gray>Removed By: <white>%player%"
+      removed-reason: "<gray>Removed Reason: <white>%reason%"
 
 match-chat:
   kill-message: "<red>%loser%<gray> was slain by <green>%winner%<red> (%health%)"

@@ -2,7 +2,7 @@ package me.raikou.duels.punishment;
 
 import me.raikou.duels.DuelsPlugin;
 import me.raikou.duels.util.ItemBuilder;
-import net.kyori.adventure.text.Component;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -23,7 +23,8 @@ public class PunishmentGui implements InventoryHolder {
     public PunishmentGui(DuelsPlugin plugin, UUID targetUuid, String targetName) {
         this.plugin = plugin;
         this.targetUuid = targetUuid;
-        this.inventory = Bukkit.createInventory(this, 54, Component.text("History: " + targetName));
+        this.inventory = Bukkit.createInventory(this, 54,
+                me.raikou.duels.util.MessageUtil.get("gui.punishment.title", "%player%", targetName));
         loadHistory();
     }
 
@@ -42,29 +43,37 @@ public class PunishmentGui implements InventoryHolder {
 
                 if (p.isRemoved()) {
                     mat = Material.LIME_WOOL;
-                    status = "§aPardoned";
+                    status = me.raikou.duels.util.MessageUtil.getString("gui.punishment.status.pardoned");
                 } else if (!p.isActive() || p.isExpired()) {
                     mat = Material.YELLOW_WOOL;
-                    status = "§eExpired";
+                    status = me.raikou.duels.util.MessageUtil.getString("gui.punishment.status.expired");
                 } else {
                     mat = Material.RED_WOOL;
-                    status = "§cActive";
+                    status = me.raikou.duels.util.MessageUtil.getString("gui.punishment.status.active");
                 }
 
                 ItemBuilder builder = new ItemBuilder(mat)
-                        .name("§6" + p.getType().name() + " #" + p.getId())
+                        .name(me.raikou.duels.util.MessageUtil.getString("gui.punishment.item-name")
+                                .replace("%type%", p.getType().name()).replace("%id%", String.valueOf(p.getId())))
                         .lore(
-                                "§7Status: " + status,
-                                "§7Reason: §f" + p.getReason(),
-                                "§7Issuer: §f" + p.getIssuerName(),
-                                "§7Date: §f" + formatter.format(Instant.ofEpochMilli(p.getTimestamp())),
-                                "§7Duration: §f" + PunishmentManager.getDurationString(p.getDuration()),
+                                me.raikou.duels.util.MessageUtil.getString("gui.punishment.lore.status")
+                                        .replace("%status%", status),
+                                me.raikou.duels.util.MessageUtil.getString("gui.punishment.lore.reason")
+                                        .replace("%reason%", p.getReason()),
+                                me.raikou.duels.util.MessageUtil.getString("gui.punishment.lore.issuer")
+                                        .replace("%issuer%", p.getIssuerName()),
+                                me.raikou.duels.util.MessageUtil.getString("gui.punishment.lore.date").replace("%date%",
+                                        formatter.format(Instant.ofEpochMilli(p.getTimestamp()))),
+                                me.raikou.duels.util.MessageUtil.getString("gui.punishment.lore.duration")
+                                        .replace("%duration%", PunishmentManager.getDurationString(p.getDuration())),
                                 "");
 
                 if (p.isRemoved()) {
                     builder.addLore(
-                            "§7Removed By: §f" + p.getRemovedBy(),
-                            "§7Removed Reason: §f" + p.getRemovedReason());
+                            me.raikou.duels.util.MessageUtil.getString("gui.punishment.lore.removed-by")
+                                    .replace("%player%", p.getRemovedBy()),
+                            me.raikou.duels.util.MessageUtil.getString("gui.punishment.lore.removed-reason")
+                                    .replace("%reason%", p.getRemovedReason()));
                 }
 
                 inventory.setItem(slot++, builder.build());

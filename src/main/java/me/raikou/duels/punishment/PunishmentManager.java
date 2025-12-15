@@ -1,8 +1,7 @@
 package me.raikou.duels.punishment;
 
 import me.raikou.duels.DuelsPlugin;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -88,16 +87,32 @@ public class PunishmentManager {
 
             // Execute immediate actions
             if (type == PunishmentType.KICK) {
-                kickPlayer(target, reason, issuer);
+                kickPlayer(target, getKickMessage(punishment), issuer);
             } else if (type == PunishmentType.BAN) {
                 kickPlayer(target, getBanKickMessage(punishment), issuer);
             } else if (type == PunishmentType.MUTE) {
                 Player p = Bukkit.getPlayer(target);
                 if (p != null) {
                     p.sendMessage(
-                            Component.text("You have been muted by " + issuer + " for: " + reason, NamedTextColor.RED));
+                            me.raikou.duels.util.MessageUtil.getRaw("punishment.mute-alert",
+                                    "%issuer%", issuer,
+                                    "%reason%", reason));
+                }
+            } else if (type == PunishmentType.WARN) {
+                Player p = Bukkit.getPlayer(target);
+                if (p != null) {
+                    p.sendMessage(
+                            me.raikou.duels.util.MessageUtil.getRaw("punishment.warn-alert",
+                                    "%issuer%", issuer,
+                                    "%reason%", reason));
                 }
             }
+
+            // Broadcast
+            Bukkit.broadcast(me.raikou.duels.util.MessageUtil.getRaw("punishment.broadcast",
+                    "%target%", targetName,
+                    "%issuer%", issuer,
+                    "%reason%", reason));
 
             logToDiscord(punishment);
         });
@@ -124,25 +139,34 @@ public class PunishmentManager {
         Bukkit.getScheduler().runTask(plugin, () -> {
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) {
-                p.kick(Component.text(message));
+                p.kick(me.raikou.duels.util.MessageUtil.parse(message));
             }
         });
     }
 
-    // Helper to format kick message
+    // New helper for kick message
+    public String getKickMessage(Punishment p) {
+        return me.raikou.duels.util.MessageUtil.getString("punishment.kick-alert")
+                .replace("%reason%", p.getReason())
+                .replace("%issuer%", p.getIssuerName())
+                .replace("<newline>", "\n");
+    }
+
+    // Helper to format ban message using localization
     public String getBanKickMessage(Punishment p) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("§c§lYOU ARE BANNED\n\n");
-        sb.append("§7Reason: §f").append(p.getReason()).append("\n");
-        sb.append("§7Banned by: §f").append(p.getIssuerName()).append("\n");
+        String key = (p.getDuration() > 0) ? "punishment.temp-ban-alert" : "punishment.ban-alert";
+        String msg = me.raikou.duels.util.MessageUtil.getString(key);
+
+        msg = msg.replace("%reason%", p.getReason())
+                .replace("%issuer%", p.getIssuerName())
+                .replace("<newline>", "\n");
+
         if (p.getDuration() > 0) {
-            sb.append("§7Expires: §f").append(getDurationString(p.getExpirationTime() - System.currentTimeMillis()))
-                    .append("\n");
-        } else {
-            sb.append("§7Expires: §cNEVER\n");
+            String timeLeft = getDurationString(p.getExpirationTime() - System.currentTimeMillis());
+            msg = msg.replace("%duration%", timeLeft);
         }
-        sb.append("\n§7Appeal at discord.gg/duels");
-        return sb.toString();
+
+        return msg;
     }
 
     private void logToDiscord(Punishment p) {

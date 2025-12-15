@@ -43,11 +43,11 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
 
         if (sub.equals("history")) {
             if (args.length < 2) {
-                sender.sendMessage("§cUsage: /punish history <player>");
+                MessageUtil.sendError(sender, "punishment.usage.history");
                 return true;
             }
             if (!(sender instanceof Player)) {
-                sender.sendMessage("§cOnly players can view history GUI.");
+                MessageUtil.sendError(sender, "general.only-players");
                 return true;
             }
             handleHistory((Player) sender, args[1]);
@@ -56,7 +56,7 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
 
         if (sub.equals("unban") || sub.equals("unmute")) {
             if (args.length < 2) {
-                sender.sendMessage("§cUsage: /punish " + sub + " <player> [reason]");
+                MessageUtil.sendError(sender, "punishment.usage." + sub);
                 return true;
             }
             handlePardon(sender, sub, args);
@@ -74,12 +74,12 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
 
         // Offline check for bans/mutes is fine, but for kick we need online
         if (targetUuid == null) {
-            sender.sendMessage("§cPlayer never played before or invalid.");
+            MessageUtil.sendError(sender, "punishment.not-found");
             return true;
         }
 
         long duration = 0;
-        String reason = "No reason provided";
+        String reason = MessageUtil.getString("punishment.default-reason");
         int reasonIndex = 2;
 
         PunishmentType type = null;
@@ -91,7 +91,7 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
             case "tempban":
                 type = PunishmentType.BAN;
                 if (args.length < 3) {
-                    sender.sendMessage("§cUsage: /punish tempban <player> <duration> [reason]");
+                    MessageUtil.sendError(sender, "punishment.usage.tempban");
                     return true;
                 }
                 duration = PunishmentManager.parseDuration(args[2]);
@@ -103,7 +103,7 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
             case "tempmute":
                 type = PunishmentType.MUTE;
                 if (args.length < 3) {
-                    sender.sendMessage("§cUsage: /punish tempmute <player> <duration> [reason]");
+                    MessageUtil.sendError(sender, "punishment.usage.tempmute");
                     return true;
                 }
                 duration = PunishmentManager.parseDuration(args[2]);
@@ -112,7 +112,7 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
             case "kick":
                 type = PunishmentType.KICK;
                 if (Bukkit.getPlayer(targetUuid) == null) {
-                    sender.sendMessage("§cPlayer is not online.");
+                    MessageUtil.sendError(sender, "punishment.not-online");
                     return true;
                 }
                 break;
@@ -139,11 +139,8 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
         plugin.getPunishmentManager()
                 .punish(targetUuid, targetName, sender.getName(), finalType, finalReason, finalDuration)
                 .thenRun(() -> {
-                    sender.sendMessage("§aPunished " + targetName + " (" + finalType.name() + ")");
-                    Player target = Bukkit.getPlayer(targetUuid);
-                    if (target != null && finalType == PunishmentType.WARN) {
-                        target.sendMessage("§c§lWARNING: §f" + finalReason);
-                    }
+                    MessageUtil.sendSuccess(sender, "punishment.success", "%player%", targetName, "%type%",
+                            finalType.name());
                 });
 
         return true;
@@ -152,7 +149,7 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
     private void handleHistory(Player sender, String targetName) {
         UUID targetUuid = getUuid(targetName);
         if (targetUuid == null) {
-            sender.sendMessage("§cPlayer not found.");
+            MessageUtil.sendError(sender, "punishment.not-found");
             return;
         }
         sender.openInventory(new PunishmentGui(plugin, targetUuid, targetName).getInventory());
@@ -162,7 +159,7 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
         String targetName = args[1];
         UUID targetUuid = getUuid(targetName);
         if (targetUuid == null) {
-            sender.sendMessage("§cPlayer not found.");
+            MessageUtil.sendError(sender, "punishment.not-found");
             return;
         }
 
@@ -179,24 +176,18 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
 
         plugin.getPunishmentManager().pardon(targetUuid, type, sender.getName(), reason).thenAccept(success -> {
             if (success) {
-                sender.sendMessage("§aPardoned " + targetName + ".");
+                MessageUtil.sendSuccess(sender, "punishment.pardoned", "%player%", targetName);
             } else {
-                sender.sendMessage("§cNo active " + type.name().toLowerCase() + " found for " + targetName + ".");
+                MessageUtil.sendError(sender, "punishment.no-record", "%type%", type.name().toLowerCase(), "%player%",
+                        targetName);
             }
         });
     }
 
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage("§6Punishment Commands:");
-        sender.sendMessage("§e/punish ban <player> [reason]");
-        sender.sendMessage("§e/punish tempban <player> <duration> [reason]");
-        sender.sendMessage("§e/punish mute <player> [reason]");
-        sender.sendMessage("§e/punish tempmute <player> <duration> [reason]");
-        sender.sendMessage("§e/punish kick <player> [reason]");
-        sender.sendMessage("§e/punish warn <player> [reason]");
-        sender.sendMessage("§e/punish unban <player> [reason]");
-        sender.sendMessage("§e/punish unmute <player> [reason]");
-        sender.sendMessage("§e/punish history <player>");
+        for (String line : MessageUtil.getStringList("punishment.help")) {
+            sender.sendMessage(MessageUtil.parse(line));
+        }
     }
 
     private UUID getUuid(String name) {

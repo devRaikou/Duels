@@ -13,6 +13,43 @@ general:
   match-not-found: "Maç bulunamadı veya süresi dolmuş."
   kit-not-found: "Kit bulunamadı."
 
+punishment:
+  ban-alert: "<newline><red><bold>SUNUCUDAN YASAKLANDINIZ</bold></red><newline><newline><gray>Sebep:</gray> <white>%reason%</white><newline><gray>Yasaklayan:</gray> <white>%issuer%</white><newline><gray>Süre:</gray> <red>SINIRSIZ</red><newline><newline><yellow>İtiraz için: discord.gg/duels</yellow>"
+  temp-ban-alert: "<newline><red><bold>SUNUCUDAN YASAKLANDINIZ</bold></red><newline><newline><gray>Sebep:</gray> <white>%reason%</white><newline><gray>Yasaklayan:</gray> <white>%issuer%</white><newline><gray>Süre:</gray> <white>%duration%</white><newline><newline><yellow>İtiraz için: discord.gg/duels</yellow>"
+  kick-alert: "<newline><red><bold>SUNUCUDAN ATILDINIZ</bold></red><newline><newline><gray>Sebep:</gray> <white>%reason%</white><newline><gray>Atan:</gray> <white>%issuer%</white><newline><newline><yellow>Hemen tekrar giriş yapabilirsiniz.</yellow>"
+  mute-alert: "<red><white>%issuer%</white> tarafından susturuldunuz! Sebep: <white>%reason%</white>"
+  mute-chat: "<red>Şu anda susturulmuş durumdasınız! Kalan süre: <white>%duration%</white>"
+  warn-alert: "<newline><red><bold>UYARI ALDINIZ</bold></red><newline><gray>Sebep:</gray> <white>%reason%</white><newline><gray>Uyaran:</gray> <white>%issuer%</white><newline>"
+  broadcast: "<red><bold>CEZA</bold></red> <dark_gray>»</dark_gray> <yellow>%target%</yellow>, <yellow>%issuer%</yellow> tarafından cezalandırıldı: <white>%reason%</white>"
+  success: "<yellow>%player%</yellow> cezalandırıldı <gray>(%type%)</gray>"
+  pardoned: "<yellow>%player%</yellow> affedildi."
+  usage:
+    history: "<red>Kullanım: /punish history <oyuncu>"
+    ban: "<red>Kullanım: /punish ban <oyuncu> [sebep]"
+    tempban: "<red>Kullanım: /punish tempban <oyuncu> <süre> [sebep]"
+    mute: "<red>Kullanım: /punish mute <oyuncu> [sebep]"
+    tempmute: "<red>Kullanım: /punish tempmute <oyuncu> <süre> [sebep]"
+    kick: "<red>Kullanım: /punish kick <oyuncu> [sebep]"
+    warn: "<red>Kullanım: /punish warn <oyuncu> [sebep]"
+    unban: "<red>Kullanım: /punish unban <oyuncu> [sebep]"
+    unmute: "<red>Kullanım: /punish unmute <oyuncu> [sebep]"
+  not-found: "<red>Oyuncu bulunamadı."
+  not-online: "<red>Oyuncu çevrimiçi değil."
+  no-record: "<red>%player% için aktif %type% bulunamadı."
+  default-reason: "Sebep belirtilmedi"
+  help:
+    - "<newline><gradient:#FFD700:#FFA500><bold>CEZA KOMUTLARI</bold></gradient>"
+    - "<gray>/punish ban <oyuncu> [sebep]"
+    - "<gray>/punish tempban <oyuncu> <süre> [sebep]"
+    - "<gray>/punish mute <oyuncu> [sebep]"
+    - "<gray>/punish tempmute <oyuncu> <süre> [sebep]"
+    - "<gray>/punish kick <oyuncu> [sebep]"
+    - "<gray>/punish warn <oyuncu> [sebep]"
+    - "<gray>/punish unban <oyuncu> [sebep]"
+    - "<gray>/punish unmute <oyuncu> [sebep]"
+    - "<gray>/punish history <oyuncu>"
+    - ""
+
 stats:
   header: "<newline><gradient:#FFD700:#FFA500><bold>İSTATİSTİKLER</bold></gradient> <dark_gray>▪</dark_gray> <yellow>%player%</yellow>"
   wins: "<gray>⚔ Zafer:</gray> <green>%amount%</green>"
@@ -130,6 +167,21 @@ gui:
       vs: "<gray>Rakip: <red>%opponent%"
       unknown: "Bilinmeyen"
     close-button: "<red>Kapat"
+  punishment:
+    title: "<dark_gray>Geçmiş: %player%"
+    item-name: "<gold>%type% #%id%"
+    status:
+      active: "<red>Aktif"
+      expired: "<yellow>Süresi Dolmuş"
+      pardoned: "<green>Affedildi"
+    lore:
+      status: "<gray>Durum: %status%"
+      reason: "<gray>Sebep: <white>%reason%"
+      issuer: "<gray>Veren: <white>%issuer%"
+      date: "<gray>Tarih: <white>%date%"
+      duration: "<gray>Süre: <white>%duration%"
+      removed-by: "<gray>Kaldıran: <white>%player%"
+      removed-reason: "<gray>Kaldırma Sebebi: <white>%reason%"
 
 match-chat:
   kill-message: "<red>%loser%<gray> öldürüldü <green>%winner%<gray> tarafından <red>(%health%)"
