@@ -141,4 +141,31 @@ public class StatsManager {
             Bukkit.getScheduler().runTask(plugin, () -> callback.accept(rank));
         });
     }
+
+    // Session Tracking
+    private final Map<UUID, Long> sessionStartTimes = new ConcurrentHashMap<>();
+
+    public void startSession(Player player) {
+        sessionStartTimes.put(player.getUniqueId(), System.currentTimeMillis());
+    }
+
+    public void endSession(Player player) {
+        Long start = sessionStartTimes.remove(player.getUniqueId());
+        if (start != null) {
+            long duration = System.currentTimeMillis() - start;
+            PlayerStats stats = getStats(player);
+            stats.setPlaytime(stats.getPlaytime() + duration);
+            saveStats(player); // Save on quit
+        }
+    }
+
+    // Helper to get live playtime including current session
+    public long getPlaytime(Player player) {
+        PlayerStats stats = getStats(player);
+        long currentSession = 0;
+        if (sessionStartTimes.containsKey(player.getUniqueId())) {
+            currentSession = System.currentTimeMillis() - sessionStartTimes.get(player.getUniqueId());
+        }
+        return stats.getPlaytime() + currentSession;
+    }
 }

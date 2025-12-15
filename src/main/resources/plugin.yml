@@ -24,6 +24,9 @@ commands:
     description: View the leaderboard
     usage: /leaderboard
     aliases: [lb, top]
+  profile:
+    description: View player profile
+    usage: /profile <player>
 permissions:
   duels.admin:
     description: Full admin access to all commands

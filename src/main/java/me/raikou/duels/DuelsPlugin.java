@@ -65,6 +65,8 @@ public class DuelsPlugin extends JavaPlugin {
     @Getter
     private me.raikou.duels.match.MatchResultGui matchResultGui;
     @Getter
+    private me.raikou.duels.gui.ProfileGui profileGui;
+    @Getter
     private long enableTime;
 
     @Override
@@ -156,6 +158,9 @@ public class DuelsPlugin extends JavaPlugin {
         // Match History & Result GUI
         this.matchHistoryManager = new me.raikou.duels.match.MatchHistoryManager(this);
         this.matchResultGui = new me.raikou.duels.match.MatchResultGui(this);
+        this.profileGui = new me.raikou.duels.gui.ProfileGui(this);
+
+        getCommand("profile").setExecutor(new me.raikou.duels.command.ProfileCommand(this));
 
         // Lobby Double Jump
         new me.raikou.duels.lobby.DoubleJumpHandler(this);

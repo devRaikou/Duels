@@ -14,7 +14,8 @@ public record LeaderboardEntry(
         int deaths,
         int currentStreak,
         int bestStreak,
-        long lastPlayed) {
+        long lastPlayed,
+        long playtime) {
 
     /**
      * Get the total number of games played.

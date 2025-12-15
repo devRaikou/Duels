@@ -112,6 +112,24 @@ gui:
     back-button: "<yellow>← Maça Geri Dön"
     ranked: "<gold>Dereceli"
     unranked: "<green>Derecesiz"
+  profile:
+    title: "<gradient:#FFD700:#FFA500><bold>%player% Profili</bold></gradient>"
+    skull-name: "<yellow>%player%</yellow>"
+    stats:
+      wins: "<gray>Zafer: <green>%amount%"
+      losses: "<gray>Yenilgi: <red>%amount%"
+      kd: "<gray>K/D Oranı: <gold>%ratio%"
+      wl: "<gray>Kazanma Oranı: <gold>%rate%%"
+      rank: "<gray>Global Sıralama: <aqua>#%rank%"
+      playtime: "<gray>Oynama Süresi: <yellow>%time%"
+    match-history:
+      victory: "<green>ZAFER</green>"
+      defeat: "<red>YENİLGİ</red>"
+      kit: "<gray>Kit: <yellow>%kit%"
+      duration: "<gray>Süre: <white>%duration%"
+      vs: "<gray>Rakip: <red>%opponent%"
+      unknown: "Bilinmeyen"
+    close-button: "<red>Kapat"
 
 match-chat:
   kill-message: "<red>%loser%<gray> öldürüldü <green>%winner%<gray> tarafından <red>(%health%)"

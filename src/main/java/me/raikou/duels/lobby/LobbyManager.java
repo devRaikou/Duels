@@ -127,9 +127,20 @@ public class LobbyManager {
             spectateItem.setItemMeta(spectateMeta);
         }
 
+        // Profile - Player Head
+        org.bukkit.inventory.ItemStack profile = new org.bukkit.inventory.ItemStack(org.bukkit.Material.PLAYER_HEAD);
+        org.bukkit.inventory.meta.SkullMeta profileMeta = (org.bukkit.inventory.meta.SkullMeta) profile.getItemMeta();
+        if (profileMeta != null) {
+            profileMeta.displayName(me.raikou.duels.util.MessageUtil
+                    .parse("<green><bold>Your Profile</bold></green> <gray>(Right Click)"));
+            profileMeta.setOwningPlayer(player);
+            profile.setItemMeta(profileMeta);
+        }
+
         player.getInventory().setItem(0, unrankedItem);
         player.getInventory().setItem(1, rankedItem);
         player.getInventory().setItem(4, editor);
+        player.getInventory().setItem(6, profile);
         player.getInventory().setItem(7, spectateItem);
         player.getInventory().setItem(8, leaderboard);
         player.setHealth(20);

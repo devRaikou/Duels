@@ -20,6 +20,7 @@ public class PlayerStats {
     private int currentStreak; // Current win streak (negative for loss streak)
     private int bestStreak; // Best win streak ever
     private long lastPlayed; // Timestamp of last duel
+    private long playtime; // Total playtime in milliseconds
 
     /**
      * Constructor for basic stats (backwards compatibility).
@@ -32,6 +33,7 @@ public class PlayerStats {
         this.currentStreak = 0;
         this.bestStreak = 0;
         this.lastPlayed = 0;
+        this.playtime = 0;
     }
 
     /**

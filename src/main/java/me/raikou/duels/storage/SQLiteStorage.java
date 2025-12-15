@@ -64,7 +64,8 @@ public class SQLiteStorage implements Storage {
                         "deaths INT DEFAULT 0, " +
                         "current_streak INT DEFAULT 0, " +
                         "best_streak INT DEFAULT 0, " +
-                        "last_played BIGINT DEFAULT 0)")) {
+                        "last_played BIGINT DEFAULT 0, " +
+                        "playtime BIGINT DEFAULT 0)")) {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -75,6 +76,7 @@ public class SQLiteStorage implements Storage {
         addColumnIfNotExists("duel_stats", "current_streak", "INT DEFAULT 0");
         addColumnIfNotExists("duel_stats", "best_streak", "INT DEFAULT 0");
         addColumnIfNotExists("duel_stats", "last_played", "BIGINT DEFAULT 0");
+        addColumnIfNotExists("duel_stats", "playtime", "BIGINT DEFAULT 0");
 
         // Kit layouts table
         try (PreparedStatement ps = connection.prepareStatement(
@@ -124,11 +126,11 @@ public class SQLiteStorage implements Storage {
     public CompletableFuture<Void> saveUser(UUID uuid, String name, PlayerStats stats) {
         return CompletableFuture.runAsync(() -> {
             try (PreparedStatement ps = connection.prepareStatement(
-                    "INSERT INTO duel_stats (uuid, name, wins, losses, kills, deaths, current_streak, best_streak, last_played) "
+                    "INSERT INTO duel_stats (uuid, name, wins, losses, kills, deaths, current_streak, best_streak, last_played, playtime) "
                             +
-                            "VALUES (?,?,?,?,?,?,?,?,?) " +
+                            "VALUES (?,?,?,?,?,?,?,?,?,?) " +
                             "ON CONFLICT(uuid) DO UPDATE SET " +
-                            "name=?, wins=?, losses=?, kills=?, deaths=?, current_streak=?, best_streak=?, last_played=?")) {
+                            "name=?, wins=?, losses=?, kills=?, deaths=?, current_streak=?, best_streak=?, last_played=?, playtime=?")) {
                 // Insert values
                 ps.setString(1, uuid.toString());
                 ps.setString(2, name);
@@ -139,15 +141,17 @@ public class SQLiteStorage implements Storage {
                 ps.setInt(7, stats.getCurrentStreak());
                 ps.setInt(8, stats.getBestStreak());
                 ps.setLong(9, stats.getLastPlayed());
+                ps.setLong(10, stats.getPlaytime());
                 // Update values
-                ps.setString(10, name);
-                ps.setInt(11, stats.getWins());
-                ps.setInt(12, stats.getLosses());
-                ps.setInt(13, stats.getKills());
-                ps.setInt(14, stats.getDeaths());
-                ps.setInt(15, stats.getCurrentStreak());
-                ps.setInt(16, stats.getBestStreak());
-                ps.setLong(17, stats.getLastPlayed());
+                ps.setString(11, name);
+                ps.setInt(12, stats.getWins());
+                ps.setInt(13, stats.getLosses());
+                ps.setInt(14, stats.getKills());
+                ps.setInt(15, stats.getDeaths());
+                ps.setInt(16, stats.getCurrentStreak());
+                ps.setInt(17, stats.getBestStreak());
+                ps.setLong(18, stats.getLastPlayed());
+                ps.setLong(19, stats.getPlaytime());
                 ps.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -159,7 +163,7 @@ public class SQLiteStorage implements Storage {
     public CompletableFuture<PlayerStats> loadUserStats(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> {
             try (PreparedStatement ps = connection.prepareStatement(
-                    "SELECT wins, losses, kills, deaths, current_streak, best_streak, last_played " +
+                    "SELECT wins, losses, kills, deaths, current_streak, best_streak, last_played, playtime " +
                             "FROM duel_stats WHERE uuid=?")) {
                 ps.setString(1, uuid.toString());
                 ResultSet rs = ps.executeQuery();
@@ -171,12 +175,13 @@ public class SQLiteStorage implements Storage {
                             rs.getInt("deaths"),
                             rs.getInt("current_streak"),
                             rs.getInt("best_streak"),
-                            rs.getLong("last_played"));
+                            rs.getLong("last_played"),
+                            rs.getLong("playtime"));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            return new PlayerStats(0, 0, 0, 0, 0, 0, 0);
+            return new PlayerStats(0, 0, 0, 0, 0, 0, 0, 0);
         });
     }
 
@@ -256,7 +261,8 @@ public class SQLiteStorage implements Storage {
             List<LeaderboardEntry> entries = new ArrayList<>();
             // Order by total games first (so all players who played appear), then by wins
             try (PreparedStatement ps = connection.prepareStatement(
-                    "SELECT uuid, name, wins, losses, kills, deaths, current_streak, best_streak, last_played " +
+                    "SELECT uuid, name, wins, losses, kills, deaths, current_streak, best_streak, last_played, playtime "
+                            +
                             "FROM duel_stats " +
                             "WHERE (wins + losses) > 0 " +
                             "ORDER BY wins DESC, (wins + losses) DESC, last_played DESC " +
@@ -273,7 +279,8 @@ public class SQLiteStorage implements Storage {
                             rs.getInt("deaths"),
                             rs.getInt("current_streak"),
                             rs.getInt("best_streak"),
-                            rs.getLong("last_played")));
+                            rs.getLong("last_played"),
+                            rs.getLong("playtime")));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

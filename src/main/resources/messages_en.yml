@@ -112,6 +112,24 @@ gui:
     back-button: "<yellow>← Back to Match"
     ranked: "<gold>Ranked"
     unranked: "<green>Unranked"
+  profile:
+    title: "<gradient:#FFD700:#FFA500><bold>%player%'s Profile</bold></gradient>"
+    skull-name: "<yellow>%player%</yellow>"
+    stats:
+      wins: "<gray>Wins: <green>%amount%"
+      losses: "<gray>Losses: <red>%amount%"
+      kd: "<gray>K/D Ratio: <gold>%ratio%"
+      wl: "<gray>W/L Ratio: <gold>%rate%%"
+      rank: "<gray>Global Rank: <aqua>#%rank%"
+      playtime: "<gray>Playtime: <yellow>%time%"
+    match-history:
+      victory: "<green>VICTORY</green>"
+      defeat: "<red>DEFEAT</red>"
+      kit: "<gray>Kit: <yellow>%kit%"
+      duration: "<gray>Duration: <white>%duration%"
+      vs: "<gray>Vs: <red>%opponent%"
+      unknown: "Unknown"
+    close-button: "<red>Close"
 
 match-chat:
   kill-message: "<red>%loser%<gray> was slain by <green>%winner%<red> (%health%)"

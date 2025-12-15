@@ -23,6 +23,7 @@ public class DuelListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         plugin.getStatsManager().loadStats(player);
+        plugin.getStatsManager().startSession(player);
         plugin.getDiscordManager().onPlayerJoin(player);
         if (plugin.getLobbyManager().isLobbySet()) {
             plugin.getLobbyManager().teleportToLobby(player);
@@ -79,6 +80,11 @@ public class DuelListener implements Listener {
                     plugin.getSpectatorGui().openGui(event.getPlayer());
                     event.setCancelled(true);
                 }
+                // Profile - Player Head
+                else if (item.getType() == org.bukkit.Material.PLAYER_HEAD && plainName.contains("Your Profile")) {
+                    plugin.getProfileGui().openProfile(event.getPlayer(), event.getPlayer());
+                    event.setCancelled(true);
+                }
             }
         }
     }
@@ -86,7 +92,7 @@ public class DuelListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        plugin.getStatsManager().saveStats(player);
+        plugin.getStatsManager().endSession(player); // Updates playtime and saves stats
         plugin.getQueueManager().removeFromQueue(player);
         plugin.getKitEditorManager().cancelEditing(player);
         plugin.getDiscordManager().onPlayerQuit(player);

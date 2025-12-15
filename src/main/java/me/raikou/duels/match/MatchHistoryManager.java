@@ -14,7 +14,8 @@ public class MatchHistoryManager {
 
     private final DuelsPlugin plugin;
     private final Map<String, DuelResult> matchHistory = new ConcurrentHashMap<>();
-    private final Map<UUID, String> playerLastMatch = new ConcurrentHashMap<>(); // Player -> Last match ID
+    private final Map<UUID, java.util.Deque<String>> playerMatchHistory = new ConcurrentHashMap<>(); // Player -> List
+                                                                                                     // of Match IDs
     private final int maxHistorySize;
 
     public MatchHistoryManager(DuelsPlugin plugin) {
@@ -27,8 +28,11 @@ public class MatchHistoryManager {
      */
     public void addMatch(DuelResult result) {
         matchHistory.put(result.getMatchId(), result);
-        playerLastMatch.put(result.getWinnerUuid(), result.getMatchId());
-        playerLastMatch.put(result.getLoserUuid(), result.getMatchId());
+
+        // Add to winner history
+        addMatchToPlayerHistory(result.getWinnerUuid(), result.getMatchId());
+        // Add to loser history
+        addMatchToPlayerHistory(result.getLoserUuid(), result.getMatchId());
 
         // Clean up old matches if over limit
         if (matchHistory.size() > maxHistorySize) {
@@ -47,6 +51,36 @@ public class MatchHistoryManager {
         }
 
         plugin.getLogger().info("[Match] Stored match result: " + result.getShortMatchId());
+    }
+
+    private void addMatchToPlayerHistory(UUID uuid, String matchId) {
+        java.util.Deque<String> history = playerMatchHistory.computeIfAbsent(uuid,
+                k -> new java.util.concurrent.ConcurrentLinkedDeque<>());
+        history.addFirst(matchId);
+        if (history.size() > 10) { // Keep last 10 per player for quick access
+            history.removeLast();
+        }
+    }
+
+    /**
+     * Get recent matches for a player.
+     */
+    public java.util.List<DuelResult> getLastMatches(UUID playerUuid, int limit) {
+        java.util.List<DuelResult> results = new java.util.ArrayList<>();
+        java.util.Deque<String> history = playerMatchHistory.get(playerUuid);
+        if (history != null) {
+            int count = 0;
+            for (String matchId : history) {
+                if (count >= limit)
+                    break;
+                DuelResult result = matchHistory.get(matchId);
+                if (result != null) {
+                    results.add(result);
+                    count++;
+                }
+            }
+        }
+        return results;
     }
 
     /**
@@ -71,14 +105,15 @@ public class MatchHistoryManager {
      * Get a player's last match result ID.
      */
     public String getPlayerLastMatchId(UUID playerUuid) {
-        return playerLastMatch.get(playerUuid);
+        java.util.Deque<String> history = playerMatchHistory.get(playerUuid);
+        return history != null ? history.peekFirst() : null;
     }
 
     /**
      * Get a player's last match result.
      */
     public DuelResult getPlayerLastMatch(UUID playerUuid) {
-        String matchId = playerLastMatch.get(playerUuid);
+        String matchId = getPlayerLastMatchId(playerUuid);
         return matchId != null ? matchHistory.get(matchId) : null;
     }
 
