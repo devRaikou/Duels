@@ -3,9 +3,10 @@ package me.raikou.duels.leaderboard;
 import me.raikou.duels.DuelsPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Manages the leaderboard cache and provides access to top players.
@@ -15,9 +16,9 @@ import java.util.UUID;
 public class LeaderboardManager {
 
     private final DuelsPlugin plugin;
-    private List<LeaderboardEntry> cachedLeaderboard = new ArrayList<>();
-    private int totalPlayerCount = 0;
-    private long lastUpdateTime = 0;
+    private final AtomicReference<List<LeaderboardEntry>> cachedLeaderboard = new AtomicReference<>(List.of());
+    private final AtomicInteger totalPlayerCount = new AtomicInteger(0);
+    private volatile long lastUpdateTime = 0;
     private int cacheSeconds = 60;
     private int topCount = 10;
 
@@ -50,13 +51,13 @@ public class LeaderboardManager {
      */
     public void refreshCache() {
         plugin.getStorage().getTopPlayers(topCount).thenAccept(entries -> {
-            cachedLeaderboard = entries;
+            cachedLeaderboard.set(List.copyOf(entries));
             lastUpdateTime = System.currentTimeMillis();
             plugin.getLogger().info("[Leaderboard] Cache refreshed with " + entries.size() + " entries.");
         });
 
         plugin.getStorage().getTotalPlayerCount().thenAccept(count -> {
-            totalPlayerCount = count;
+            totalPlayerCount.set(count);
         });
     }
 
@@ -67,38 +68,39 @@ public class LeaderboardManager {
      * @return LeaderboardEntry or null if position is invalid
      */
     public LeaderboardEntry getTopPlayer(int position) {
-        if (position < 1 || position > cachedLeaderboard.size()) {
+        List<LeaderboardEntry> snapshot = cachedLeaderboard.get();
+        if (position < 1 || position > snapshot.size()) {
             return null;
         }
-        return cachedLeaderboard.get(position - 1);
+        return snapshot.get(position - 1);
     }
 
     /**
      * Get the full cached leaderboard.
      */
     public List<LeaderboardEntry> getLeaderboard() {
-        return new ArrayList<>(cachedLeaderboard);
+        return cachedLeaderboard.get();
     }
 
     /**
      * Get the number of cached entries.
      */
     public int getLeaderboardSize() {
-        return cachedLeaderboard.size();
+        return cachedLeaderboard.get().size();
     }
 
     /**
      * Get total number of players who have played.
      */
     public int getTotalPlayerCount() {
-        return totalPlayerCount;
+        return totalPlayerCount.get();
     }
 
     /**
      * Check if the cache is populated.
      */
     public boolean isCacheReady() {
-        return !cachedLeaderboard.isEmpty();
+        return !cachedLeaderboard.get().isEmpty();
     }
 
     public long getLastUpdateTime() {

@@ -11,6 +11,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class StatsCommand implements CommandExecutor {
 
@@ -42,30 +45,49 @@ public class StatsCommand implements CommandExecutor {
         }
 
         PlayerStats stats = plugin.getStatsManager().getStats(target);
+        int startingElo = plugin.getConfig().getInt("ranked.starting-elo", 1000);
 
         // Calculate K/D
-        double kdRatio = 0.0;
+        double kdRatio;
         if (stats.getDeaths() > 0) {
             kdRatio = (double) stats.getKills() / stats.getDeaths();
         } else {
             kdRatio = stats.getKills();
         }
 
-        sender.sendMessage(
-                MessageUtil.getRaw("stats.header", "%player%", target.getName()));
-        sender.sendMessage(MessageUtil.getRaw("stats.wins", "%amount%", String.valueOf(stats.getWins())));
-        sender.sendMessage(MessageUtil.getRaw("stats.losses", "%amount%", String.valueOf(stats.getLosses())));
-        sender.sendMessage(MessageUtil.getRaw("stats.kills", "%amount%", String.valueOf(stats.getKills())));
-        sender.sendMessage(MessageUtil.getRaw("stats.deaths", "%amount%", String.valueOf(stats.getDeaths())));
-        sender.sendMessage(MessageUtil.getRaw("stats.kd", "%ratio%", df.format(kdRatio)));
-
-        // Show ELO for each kit
-        sender.sendMessage(MessageUtil.getRaw("stats.elo-header"));
-        for (String kitName : plugin.getKitManager().getKits().keySet()) {
-            int elo = plugin.getStorage().loadElo(target.getUniqueId(), kitName).join();
-            sender.sendMessage(MessageUtil.getRaw("stats.elo-kit", "%kit%", kitName, "%elo%", String.valueOf(elo)));
+        List<String> kits = new ArrayList<>(plugin.getKitManager().getKits().keySet());
+        List<CompletableFuture<Integer>> futures = new ArrayList<>();
+        for (String kitName : kits) {
+            CompletableFuture<Integer> futureLine = plugin.getStorage()
+                    .loadElo(target.getUniqueId(), kitName)
+                    .handle((elo, throwable) -> throwable == null && elo != null ? elo : startingElo);
+            futures.add(futureLine);
         }
-        sender.sendMessage(MessageUtil.parse(" ")); // Empty line footer
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (sender instanceof Player playerSender && !playerSender.isOnline()) {
+                    return;
+                }
+
+                sender.sendMessage(MessageUtil.getRaw("stats.header", "%player%", target.getName()));
+                sender.sendMessage(MessageUtil.getRaw("stats.wins", "%amount%", String.valueOf(stats.getWins())));
+                sender.sendMessage(MessageUtil.getRaw("stats.losses", "%amount%", String.valueOf(stats.getLosses())));
+                sender.sendMessage(MessageUtil.getRaw("stats.kills", "%amount%", String.valueOf(stats.getKills())));
+                sender.sendMessage(MessageUtil.getRaw("stats.deaths", "%amount%", String.valueOf(stats.getDeaths())));
+                sender.sendMessage(MessageUtil.getRaw("stats.kd", "%ratio%", df.format(kdRatio)));
+                sender.sendMessage(MessageUtil.getRaw("stats.elo-header"));
+
+                for (int i = 0; i < kits.size(); i++) {
+                    String kitName = kits.get(i);
+                    int elo = futures.get(i).getNow(startingElo);
+                    sender.sendMessage(MessageUtil.getLegacy("stats.elo-kit", "%kit%", kitName, "%elo%",
+                            String.valueOf(elo)));
+                }
+
+                sender.sendMessage(MessageUtil.parse(" "));
+            });
+        });
 
         return true;
     }

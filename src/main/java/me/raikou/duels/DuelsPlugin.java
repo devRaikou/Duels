@@ -3,9 +3,11 @@ package me.raikou.duels;
 import lombok.Getter;
 import me.raikou.duels.arena.ArenaManager;
 import me.raikou.duels.duel.DuelManager;
-import me.raikou.duels.manager.LanguageManager;
 import me.raikou.duels.kit.KitManager;
+import me.raikou.duels.manager.LanguageManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashSet;
 
 public class DuelsPlugin extends JavaPlugin {
 
@@ -42,6 +44,8 @@ public class DuelsPlugin extends JavaPlugin {
     private me.raikou.duels.util.NametagManager nametagManager;
     @Getter
     private me.raikou.duels.util.CPSManager cpsManager;
+    @Getter
+    private me.raikou.duels.util.BoardManager boardManager;
     @Getter
     private me.raikou.duels.anticheat.AntiCheatManager antiCheatManager;
     @Getter
@@ -84,12 +88,10 @@ public class DuelsPlugin extends JavaPlugin {
         this.kitManager = new KitManager(this);
         this.duelManager = new DuelManager(this);
         this.queueManager = new me.raikou.duels.queue.QueueManager(this);
-        this.queueManager = new me.raikou.duels.queue.QueueManager(this);
         this.lobbyManager = new me.raikou.duels.lobby.LobbyManager(this);
         this.guiManager = new me.raikou.duels.gui.GuiManager(this);
         this.statsManager = new me.raikou.duels.stats.StatsManager(this);
         this.kitEditorManager = new me.raikou.duels.editor.KitEditorManager(this);
-        this.worldManager = new me.raikou.duels.world.WorldManager(this);
         this.worldManager = new me.raikou.duels.world.WorldManager(this);
         this.discordManager = new me.raikou.duels.discord.DiscordManager(this);
         this.languageManager = new LanguageManager(this);
@@ -103,6 +105,11 @@ public class DuelsPlugin extends JavaPlugin {
             this.storage = new me.raikou.duels.storage.SQLiteStorage(this);
         }
         this.storage.connect();
+        if (!this.storage.isConnected()) {
+            getLogger().severe("Storage initialization failed. Disabling plugin.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         // Commands
         me.raikou.duels.command.DuelCommand duelCommand = new me.raikou.duels.command.DuelCommand(this);
@@ -120,7 +127,7 @@ public class DuelsPlugin extends JavaPlugin {
 
         // Scoreboard & Nametags & CPS
         this.cpsManager = new me.raikou.duels.util.CPSManager(this);
-        new me.raikou.duels.util.BoardManager(this);
+        this.boardManager = new me.raikou.duels.util.BoardManager(this);
         this.nametagManager = new me.raikou.duels.util.NametagManager(this);
 
         // Anti-Cheat
@@ -177,8 +184,33 @@ public class DuelsPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (storage != null)
+        if (duelManager != null) {
+            for (me.raikou.duels.duel.Duel duel : new HashSet<>(duelManager.getActiveDuels())) {
+                try {
+                    duel.reset();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        if (bossBarManager != null) {
+            bossBarManager.cleanup();
+        }
+        if (nametagManager != null) {
+            nametagManager.cleanup();
+        }
+        if (boardManager != null) {
+            getServer().getOnlinePlayers().forEach(boardManager::cleanup);
+        }
+        if (chatManager != null) {
+            getServer().getOnlinePlayers().forEach(chatManager::cleanup);
+        }
+        if (worldManager != null) {
+            worldManager.shutdown();
+        }
+        if (storage != null) {
             storage.disconnect();
+        }
         getLogger().info("Duels Core Plugin has been disabled!");
     }
 }

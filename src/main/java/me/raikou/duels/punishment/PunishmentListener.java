@@ -11,6 +11,8 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.concurrent.TimeUnit;
+
 public class PunishmentListener implements Listener {
 
     private final DuelsPlugin plugin;
@@ -29,12 +31,10 @@ public class PunishmentListener implements Listener {
         // But since storage is async, we must block or use cache if persistent?
         // Let's rely on cached data if available or quick query.
 
-        // Since we are adding this to an existing system, and storage is
-        // CompletableFuture based,
-        // we have to join() to block the login thread safely (as it is AsyncPreLogin).
+        // AsyncPreLogin runs off the main thread, so a short bounded wait is acceptable.
 
         try {
-            var punishments = plugin.getStorage().getActivePunishments(event.getUniqueId()).join();
+            var punishments = plugin.getStorage().getActivePunishments(event.getUniqueId()).get(5, TimeUnit.SECONDS);
 
             for (Punishment p : punishments) {
                 if (p.getType() == PunishmentType.BAN && !p.isExpired()) {

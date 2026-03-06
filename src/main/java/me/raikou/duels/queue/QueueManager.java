@@ -71,19 +71,23 @@ public class QueueManager {
     }
 
     private void addToRankedQueue(Player player, String kitName) {
-        // Load ELO async then add to queue
-        plugin.getStorage().loadElo(player.getUniqueId(), kitName).thenAccept(elo -> {
+        plugin.getStorage().loadElo(player.getUniqueId(), kitName).thenAccept(elo -> Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!player.isOnline()) {
+                return;
+            }
+            if (isInQueue(player)) {
+                return;
+            }
+
             RankedQueueEntry entry = new RankedQueueEntry(player.getUniqueId(), kitName, elo);
-            rankedQueues.computeIfAbsent(kitName, k -> Collections.synchronizedList(new ArrayList<>())).add(entry);
+            rankedQueues.computeIfAbsent(kitName, k -> new ArrayList<>()).add(entry);
             queueJoinTimes.put(player.getUniqueId(), System.currentTimeMillis());
 
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                me.raikou.duels.util.MessageUtil.sendSuccess(player, "queue.join", "%kit%", kitName, "%type%",
-                        "RANKED");
-                me.raikou.duels.util.MessageUtil.sendInfo(player, "ranked.queue-info", "%elo%", String.valueOf(elo));
-                giveQueueItems(player);
-            });
-        });
+            me.raikou.duels.util.MessageUtil.sendSuccess(player, "queue.join", "%kit%", kitName, "%type%",
+                    "RANKED");
+            me.raikou.duels.util.MessageUtil.sendInfo(player, "ranked.queue-info", "%elo%", String.valueOf(elo));
+            giveQueueItems(player);
+        }));
     }
 
     public void removeFromQueue(Player player) {

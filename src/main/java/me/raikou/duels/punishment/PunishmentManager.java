@@ -80,56 +80,64 @@ public class PunishmentManager {
                 null);
 
         return plugin.getStorage().savePunishment(punishment).thenRun(() -> {
-            // Update cache if online
-            if (Bukkit.getPlayer(target) != null) {
-                loadPunishments(target);
-            }
-
-            // Execute immediate actions
-            if (type == PunishmentType.KICK) {
-                kickPlayer(target, getKickMessage(punishment), issuer);
-            } else if (type == PunishmentType.BAN) {
-                kickPlayer(target, getBanKickMessage(punishment), issuer);
-            } else if (type == PunishmentType.MUTE) {
-                Player p = Bukkit.getPlayer(target);
-                if (p != null) {
-                    p.sendMessage(
-                            me.raikou.duels.util.MessageUtil.getRaw("punishment.mute-alert",
-                                    "%issuer%", issuer,
-                                    "%reason%", reason));
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (Bukkit.getPlayer(target) != null) {
+                    loadPunishments(target);
                 }
-            } else if (type == PunishmentType.WARN) {
-                Player p = Bukkit.getPlayer(target);
-                if (p != null) {
-                    p.sendMessage(
-                            me.raikou.duels.util.MessageUtil.getRaw("punishment.warn-alert",
-                                    "%issuer%", issuer,
-                                    "%reason%", reason));
+
+                if (type == PunishmentType.KICK) {
+                    kickPlayer(target, getKickMessage(punishment), issuer);
+                } else if (type == PunishmentType.BAN) {
+                    kickPlayer(target, getBanKickMessage(punishment), issuer);
+                } else if (type == PunishmentType.MUTE) {
+                    Player p = Bukkit.getPlayer(target);
+                    if (p != null) {
+                        p.sendMessage(
+                                me.raikou.duels.util.MessageUtil.getRaw("punishment.mute-alert",
+                                        "%issuer%", issuer,
+                                        "%reason%", reason));
+                    }
+                } else if (type == PunishmentType.WARN) {
+                    Player p = Bukkit.getPlayer(target);
+                    if (p != null) {
+                        p.sendMessage(
+                                me.raikou.duels.util.MessageUtil.getRaw("punishment.warn-alert",
+                                        "%issuer%", issuer,
+                                        "%reason%", reason));
+                    }
                 }
-            }
 
-            // Broadcast
-            Bukkit.broadcast(me.raikou.duels.util.MessageUtil.getRaw("punishment.broadcast",
-                    "%target%", targetName,
-                    "%issuer%", issuer,
-                    "%reason%", reason));
-
+                Bukkit.broadcast(me.raikou.duels.util.MessageUtil.getRaw("punishment.broadcast",
+                        "%target%", targetName,
+                        "%issuer%", issuer,
+                        "%reason%", reason));
+            });
             logToDiscord(punishment);
         });
     }
 
     public CompletableFuture<Boolean> pardon(UUID target, PunishmentType type, String removedBy, String reason) {
-        return plugin.getStorage().getActivePunishments(target).thenApply(list -> {
+        return plugin.getStorage().getActivePunishments(target).thenCompose(list -> {
             boolean found = false;
+            List<CompletableFuture<Void>> expirations = new java.util.ArrayList<>();
             for (Punishment p : list) {
                 if (p.getType() == type && !p.isRemoved()) {
-                    plugin.getStorage().expirePunishment(p.getId(), removedBy, reason);
+                    expirations.add(plugin.getStorage().expirePunishment(p.getId(), removedBy, reason));
                     found = true;
                 }
             }
-            // Refresh cache
-            if (Bukkit.getPlayer(target) != null) {
-                loadPunishments(target);
+            CompletableFuture<Void> allExpirations = expirations.isEmpty()
+                    ? CompletableFuture.completedFuture(null)
+                    : CompletableFuture.allOf(expirations.toArray(new CompletableFuture[0]));
+            boolean foundResult = found;
+            return allExpirations.thenApply(ignored -> foundResult);
+        }).thenApply(found -> {
+            if (found) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (Bukkit.getPlayer(target) != null) {
+                        loadPunishments(target);
+                    }
+                });
             }
             return found;
         });

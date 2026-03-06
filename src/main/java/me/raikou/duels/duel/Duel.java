@@ -105,12 +105,16 @@ public class Duel {
                             float originalSpeed = originalWalkSpeeds.getOrDefault(uuid, 0.2f);
                             unfreezePlayer(p, originalSpeed);
 
+                            Player opponent = players.get(0).equals(uuid)
+                                    ? Bukkit.getPlayer(players.get(1))
+                                    : Bukkit.getPlayer(players.get(0));
+                            String opponentName = opponent != null ? opponent.getName() : "Unknown";
+
                             p.showTitle(net.kyori.adventure.title.Title.title(
                                     me.raikou.duels.util.MessageUtil.getRaw("titles.duel-start.title"),
                                     me.raikou.duels.util.MessageUtil.getRaw("titles.duel-start.subtitle")));
                             p.sendMessage(me.raikou.duels.util.MessageUtil.get("duel.start", "%opponent%",
-                                    players.get(0).equals(uuid) ? Bukkit.getPlayer(players.get(1)).getName()
-                                            : Bukkit.getPlayer(players.get(0)).getName(),
+                                    opponentName,
                                     "%kit%", kitName));
                         }
                     }
@@ -231,6 +235,9 @@ public class Duel {
     }
 
     public void end(UUID winner) {
+        if (this.state == DuelState.ENDING) {
+            return;
+        }
         this.state = DuelState.ENDING;
 
         Player winnerPlayer = Bukkit.getPlayer(winner);
@@ -300,7 +307,7 @@ public class Duel {
         final org.bukkit.inventory.ItemStack[] finalLoserArmor = loserArmor;
         final double winnerHealth = winnerPlayer != null ? winnerPlayer.getHealth() : 0;
 
-        if (ranked && loser != null) {
+        if (ranked && loser != null && winner != null) {
             int eloGain = plugin.getConfig().getInt("ranked.elo-gain-base", 25);
             int eloLoss = plugin.getConfig().getInt("ranked.elo-loss-base", 25);
 

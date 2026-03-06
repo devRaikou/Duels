@@ -35,6 +35,9 @@ permissions:
   duels.admin:
     description: Full admin access to all commands
     default: op
+  duels.punish:
+    description: Access punishment commands
+    default: op
   duels.chat.color:
     description: Use MiniMessage colors in chat
     default: op

@@ -6,6 +6,7 @@ import me.raikou.duels.util.MessageUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,6 +14,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +23,7 @@ import java.util.UUID;
 public class KitEditorManager implements Listener {
 
     private final DuelsPlugin plugin;
+    private final NamespacedKey editorKitKey;
     // UUID -> KitName (Being edited)
     private final Map<UUID, String> editingPlayers = new HashMap<>();
 
@@ -30,6 +33,7 @@ public class KitEditorManager implements Listener {
 
     public KitEditorManager(DuelsPlugin plugin) {
         this.plugin = plugin;
+        this.editorKitKey = new NamespacedKey(plugin, "editor-kit");
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -99,6 +103,7 @@ public class KitEditorManager implements Listener {
                 lore.add(MiniMessage.miniMessage().deserialize(clickFormat));
 
                 meta.lore(lore);
+                meta.getPersistentDataContainer().set(editorKitKey, PersistentDataType.STRING, kitName);
                 icon.setItemMeta(meta);
             }
             inv.setItem(kitSlots[index], icon);
@@ -325,15 +330,14 @@ public class KitEditorManager implements Listener {
                     || clicked.getType() == Material.GRAY_STAINED_GLASS_PANE)
                 return;
 
-            // Kit selection logic
-            String displayName = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
-                    .serialize(clicked.getItemMeta().displayName());
-            for (String kitName : plugin.getKitManager().getKits().keySet()) {
-                if (displayName.contains(kitName)) {
-                    player.closeInventory();
-                    startEditing(player, kitName);
-                    return;
-                }
+            ItemMeta meta = clicked.getItemMeta();
+            if (meta == null) {
+                return;
+            }
+            String kitName = meta.getPersistentDataContainer().get(editorKitKey, PersistentDataType.STRING);
+            if (kitName != null && plugin.getKitManager().getKit(kitName) != null) {
+                player.closeInventory();
+                startEditing(player, kitName);
             }
         }
 

@@ -95,6 +95,10 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 duration = PunishmentManager.parseDuration(args[2]);
+                if (duration <= 0) {
+                    sender.sendMessage(MessageUtil.parse("<red>Invalid duration. Example: 1d12h, 30m, 45s"));
+                    return true;
+                }
                 reasonIndex = 3;
                 break;
             case "mute":
@@ -107,6 +111,10 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 duration = PunishmentManager.parseDuration(args[2]);
+                if (duration <= 0) {
+                    sender.sendMessage(MessageUtil.parse("<red>Invalid duration. Example: 1d12h, 30m, 45s"));
+                    return true;
+                }
                 reasonIndex = 3;
                 break;
             case "kick":
@@ -139,8 +147,9 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
         plugin.getPunishmentManager()
                 .punish(targetUuid, targetName, sender.getName(), finalType, finalReason, finalDuration)
                 .thenRun(() -> {
-                    MessageUtil.sendSuccess(sender, "punishment.success", "%player%", targetName, "%type%",
-                            finalType.name());
+                    Bukkit.getScheduler().runTask(plugin, () -> MessageUtil.sendSuccess(sender, "punishment.success",
+                            "%player%", targetName, "%type%",
+                            finalType.name()));
                 });
 
         return true;
@@ -175,12 +184,15 @@ public class PunishmentCommand implements CommandExecutor, TabCompleter {
         PunishmentType type = cmd.equals("unban") ? PunishmentType.BAN : PunishmentType.MUTE;
 
         plugin.getPunishmentManager().pardon(targetUuid, type, sender.getName(), reason).thenAccept(success -> {
-            if (success) {
-                MessageUtil.sendSuccess(sender, "punishment.pardoned", "%player%", targetName);
-            } else {
-                MessageUtil.sendError(sender, "punishment.no-record", "%type%", type.name().toLowerCase(), "%player%",
-                        targetName);
-            }
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (success) {
+                    MessageUtil.sendSuccess(sender, "punishment.pardoned", "%player%", targetName);
+                } else {
+                    MessageUtil.sendError(sender, "punishment.no-record", "%type%", type.name().toLowerCase(),
+                            "%player%",
+                            targetName);
+                }
+            });
         });
     }
 

@@ -6,7 +6,6 @@ import me.raikou.duels.stats.PlayerStats;
 import me.raikou.duels.util.MessageUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -26,6 +26,25 @@ import java.util.UUID;
 public class ProfileGui implements Listener {
 
     private final DuelsPlugin plugin;
+
+    private static final class ProfileInventoryHolder implements InventoryHolder {
+        private Inventory inventory;
+        @SuppressWarnings("unused")
+        private final UUID targetUuid;
+
+        private ProfileInventoryHolder(UUID targetUuid) {
+            this.targetUuid = targetUuid;
+        }
+
+        private void setInventory(Inventory inventory) {
+            this.inventory = inventory;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+    }
 
     public ProfileGui(DuelsPlugin plugin) {
         this.plugin = plugin;
@@ -49,7 +68,9 @@ public class ProfileGui implements Listener {
 
     private void openProfileInternal(Player viewer, Player target, int rank) {
         int size = 54;
-        Inventory inv = Bukkit.createInventory(null, size, getGuiTitle(target.getName()));
+        ProfileInventoryHolder holder = new ProfileInventoryHolder(target.getUniqueId());
+        Inventory inv = Bukkit.createInventory(holder, size, getGuiTitle(target.getName()));
+        holder.setInventory(inv);
         PlayerStats stats = plugin.getStatsManager().getStats(target);
 
         // Fill borders (Black Stained Glass)
@@ -154,16 +175,18 @@ public class ProfileGui implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (PlainTextComponentSerializer.plainText().serialize(event.getView().title()).contains("Profile")) { // Simple
-                                                                                                               // check,
-                                                                                                               // ideally
-                                                                                                               // check
-                                                                                                               // exact
-                                                                                                               // title
-            event.setCancelled(true);
-            if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.BARRIER) {
-                event.getWhoClicked().closeInventory();
-            }
+        Inventory topInventory = event.getView().getTopInventory();
+        if (!(topInventory.getHolder() instanceof ProfileInventoryHolder)) {
+            return;
+        }
+
+        event.setCancelled(true);
+        if (event.getClickedInventory() == null || !event.getClickedInventory().equals(topInventory)) {
+            return;
+        }
+
+        if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.BARRIER) {
+            event.getWhoClicked().closeInventory();
         }
     }
 }

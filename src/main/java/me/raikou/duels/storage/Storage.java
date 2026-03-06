@@ -14,6 +14,13 @@ public interface Storage {
     void disconnect();
 
     /**
+     * @return true if storage is ready to serve queries.
+     */
+    default boolean isConnected() {
+        return false;
+    }
+
+    /**
      * Save complete user stats including streak and last played.
      */
     CompletableFuture<Void> saveUser(UUID uuid, String name, PlayerStats stats);

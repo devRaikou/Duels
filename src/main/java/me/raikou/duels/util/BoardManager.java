@@ -16,15 +16,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BoardManager {
 
     private final DuelsPlugin plugin;
     // Cache scoreboards per player for reuse
     private final Map<UUID, Scoreboard> playerBoards = new HashMap<>();
+    private final Map<String, CachedElo> eloCache = new ConcurrentHashMap<>();
+    private final long eloCacheTtlMs = 15_000L;
+    private final int startingElo;
+
+    private static final class CachedElo {
+        private volatile int elo;
+        private volatile long loadedAt;
+        private volatile boolean loading;
+
+        private CachedElo(int elo) {
+            this.elo = elo;
+            this.loadedAt = 0;
+            this.loading = false;
+        }
+    }
 
     public BoardManager(DuelsPlugin plugin) {
         this.plugin = plugin;
+        this.startingElo = plugin.getConfig().getInt("ranked.starting-elo", 1000);
         startUpdater();
     }
 
@@ -122,7 +139,7 @@ public class BoardManager {
                 // ELO placeholders for ranked
                 if (duel.isRanked()) {
                     String kitName = duel.getKitName();
-                    int playerElo = plugin.getStorage().loadElo(player.getUniqueId(), kitName).join();
+                    int playerElo = getElo(player.getUniqueId(), kitName);
                     int opponentElo = getOpponentElo(player, duel, kitName);
                     line = line.replace("%elo%", String.valueOf(playerElo));
                     line = line.replace("%opponent_elo%", String.valueOf(opponentElo));
@@ -209,9 +226,34 @@ public class BoardManager {
     private int getOpponentElo(Player player, Duel duel, String kitName) {
         java.util.UUID opponentUUID = getOpponentUUID(player, duel);
         if (opponentUUID != null) {
-            return plugin.getStorage().loadElo(opponentUUID, kitName).join();
+            return getElo(opponentUUID, kitName);
         }
-        return 1000;
+        return startingElo;
+    }
+
+    private int getElo(UUID uuid, String kitName) {
+        String cacheKey = uuid + "|" + kitName.toLowerCase(java.util.Locale.ROOT);
+        CachedElo cached = eloCache.computeIfAbsent(cacheKey, ignored -> new CachedElo(startingElo));
+        long now = System.currentTimeMillis();
+
+        if (cached.loadedAt == 0 || now - cached.loadedAt >= eloCacheTtlMs) {
+            refreshEloAsync(uuid, kitName, cached);
+        }
+        return cached.elo;
+    }
+
+    private void refreshEloAsync(UUID uuid, String kitName, CachedElo cached) {
+        if (cached.loading) {
+            return;
+        }
+        cached.loading = true;
+        plugin.getStorage().loadElo(uuid, kitName).whenComplete((elo, throwable) -> Bukkit.getScheduler().runTask(plugin, () -> {
+            if (throwable == null && elo != null) {
+                cached.elo = elo;
+            }
+            cached.loadedAt = System.currentTimeMillis();
+            cached.loading = false;
+        }));
     }
 
     /**
@@ -219,5 +261,7 @@ public class BoardManager {
      */
     public void cleanup(Player player) {
         playerBoards.remove(player.getUniqueId());
+        String prefix = player.getUniqueId() + "|";
+        eloCache.keySet().removeIf(key -> key.startsWith(prefix));
     }
 }

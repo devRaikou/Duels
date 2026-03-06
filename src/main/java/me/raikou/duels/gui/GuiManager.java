@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,6 +14,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +24,7 @@ import me.raikou.duels.queue.QueueType;
 public class GuiManager implements Listener {
 
     private final DuelsPlugin plugin;
+    private final NamespacedKey queueKitKey;
 
     private Component getGuiTitle() {
         String titleRaw = plugin.getLanguageManager().getMessage("gui.queue.title");
@@ -30,6 +33,7 @@ public class GuiManager implements Listener {
 
     public GuiManager(DuelsPlugin plugin) {
         this.plugin = plugin;
+        this.queueKitKey = new NamespacedKey(plugin, "queue-kit");
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -76,6 +80,7 @@ public class GuiManager implements Listener {
                 String nameFormat = plugin.getLanguageManager().getMessage("gui.queue.item-name");
                 nameFormat = nameFormat.replace("%kit%", kitName);
                 meta.displayName(MiniMessage.miniMessage().deserialize(nameFormat));
+                meta.getPersistentDataContainer().set(queueKitKey, PersistentDataType.STRING, kitName);
 
                 // Lore
                 java.util.List<Component> lore = new java.util.ArrayList<>();
@@ -107,37 +112,20 @@ public class GuiManager implements Listener {
 
             Player player = (Player) event.getWhoClicked();
             ItemStack clicked = event.getCurrentItem();
-
-            // Extract kit name from Display Name
-            // This is a bit risky if display name has formatting, but for now we striped
-            // colors.
-            // Better way: NBT tags (PersistentDataContainer).
-            // For simplicity in this iteration, we iterate kits and check match.
-            // Or we just stored the kitname in a hidden way?
-            // Let's iterate kits.
-
-            // Simple approach: Strip color from title
-            String displayName = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
-                    .serialize(clicked.getItemMeta().displayName());
-            // displayName might be "Default", we check if we have a kit named that.
-
-            // Actually, let's just use the index if possible? No, kits are map.
-            // Let's use PersistentDataContainer for robustness.
-
-            // Re-doing the icon creation to add NBT would be better but let's try matching
-            // name first.
-            // Checking kit names.
-
-            for (String kitName : plugin.getKitManager().getKits().keySet()) {
-                if (displayName.contains(kitName)) {
-                    // Perform queue join with the selected type
-                    QueueType type = playerQueueTypeSelection.getOrDefault(player.getUniqueId(), QueueType.SOLO);
-                    player.closeInventory();
-                    plugin.getQueueManager().addToQueue(player, kitName, type);
-                    playerQueueTypeSelection.remove(player.getUniqueId());
-                    return;
-                }
+            ItemMeta meta = clicked.getItemMeta();
+            if (meta == null) {
+                return;
             }
+
+            String kitName = meta.getPersistentDataContainer().get(queueKitKey, PersistentDataType.STRING);
+            if (kitName == null || plugin.getKitManager().getKit(kitName) == null) {
+                return;
+            }
+
+            QueueType type = playerQueueTypeSelection.getOrDefault(player.getUniqueId(), QueueType.SOLO);
+            player.closeInventory();
+            plugin.getQueueManager().addToQueue(player, kitName, type);
+            playerQueueTypeSelection.remove(player.getUniqueId());
         }
     }
 }

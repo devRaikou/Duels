@@ -9,12 +9,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 public class LanguageManager {
 
     private final DuelsPlugin plugin;
     private FileConfiguration messages;
+    private FileConfiguration fallbackEnglish;
     private File messagesFile;
+    private static final Map<String, String> KEY_ALIASES = Map.of(
+            "command.player-not-found", "general.player-not-found");
 
     public LanguageManager(DuelsPlugin plugin) {
         this.plugin = plugin;
@@ -37,6 +41,7 @@ public class LanguageManager {
         }
 
         messages = YamlConfiguration.loadConfiguration(messagesFile);
+        fallbackEnglish = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "messages_en.yml"));
 
         // Reload default to ensure we have all keys if file is old
         InputStream defConfigStream = plugin.getResource(fileName);
@@ -54,12 +59,44 @@ public class LanguageManager {
     }
 
     public String getMessage(String key) {
-        if (!messages.contains(key))
-            return "Missing key: " + key;
-        return messages.getString(key);
+        String resolved = KEY_ALIASES.getOrDefault(key, key);
+        String fromSelected = messages.getString(resolved);
+        if (fromSelected != null) {
+            return fromSelected;
+        }
+        if (!resolved.equals(key)) {
+            String direct = messages.getString(key);
+            if (direct != null) {
+                return direct;
+            }
+        }
+        if (fallbackEnglish != null) {
+            String fromEnglish = fallbackEnglish.getString(resolved);
+            if (fromEnglish != null) {
+                return fromEnglish;
+            }
+            if (!resolved.equals(key)) {
+                String fromEnglishDirect = fallbackEnglish.getString(key);
+                if (fromEnglishDirect != null) {
+                    return fromEnglishDirect;
+                }
+            }
+        }
+        return "Missing key: " + key;
     }
 
     public List<String> getList(String key) {
-        return messages.getStringList(key);
+        String resolved = KEY_ALIASES.getOrDefault(key, key);
+        List<String> list = messages.getStringList(resolved);
+        if (!list.isEmpty()) {
+            return list;
+        }
+        if (fallbackEnglish != null) {
+            List<String> fallbackList = fallbackEnglish.getStringList(resolved);
+            if (!fallbackList.isEmpty()) {
+                return fallbackList;
+            }
+        }
+        return List.of();
     }
 }

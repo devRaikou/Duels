@@ -4,28 +4,80 @@ import me.raikou.duels.DuelsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages player statistics with immediate persistence and leaderboard updates.
+ * Manages player statistics with deterministic async merge.
  */
 public class StatsManager {
 
     private final DuelsPlugin plugin;
-    private final Map<UUID, PlayerStats> statsCache = new ConcurrentHashMap<>();
+    private final Map<UUID, StatsState> statsCache = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> sessionStartTimes = new ConcurrentHashMap<>();
 
     public StatsManager(DuelsPlugin plugin) {
         this.plugin = plugin;
     }
 
+    @FunctionalInterface
+    private interface StatsMutation {
+        void apply(PlayerStats stats);
+    }
+
+    private static final class StatsState {
+        private PlayerStats stats = new PlayerStats();
+        private boolean loaded = false;
+        private final List<StatsMutation> pendingMutations = new ArrayList<>();
+        private CompletableFuture<Void> loadFuture = CompletableFuture.completedFuture(null);
+    }
+
+    private StatsState getState(UUID uuid) {
+        return statsCache.computeIfAbsent(uuid, ignored -> new StatsState());
+    }
+
+    private PlayerStats copyStats(PlayerStats source) {
+        return new PlayerStats(
+                source.getWins(),
+                source.getLosses(),
+                source.getKills(),
+                source.getDeaths(),
+                source.getCurrentStreak(),
+                source.getBestStreak(),
+                source.getLastPlayed(),
+                source.getPlaytime());
+    }
+
+    private void applyMutation(UUID uuid, StatsMutation mutation) {
+        StatsState state = getState(uuid);
+        synchronized (state) {
+            mutation.apply(state.stats);
+            if (!state.loaded) {
+                state.pendingMutations.add(mutation);
+            }
+        }
+    }
+
     /**
-     * Load stats for a player from database into cache.
+     * Load stats for a player from database into cache with mutation replay.
      */
     public void loadStats(Player player) {
-        plugin.getStorage().loadUserStats(player.getUniqueId()).thenAccept(stats -> {
-            statsCache.put(player.getUniqueId(), stats);
+        UUID uuid = player.getUniqueId();
+        StatsState state = getState(uuid);
+        state.loadFuture = plugin.getStorage().loadUserStats(uuid).thenAccept(loadedStats -> {
+            synchronized (state) {
+                PlayerStats merged = copyStats(loadedStats);
+                for (StatsMutation mutation : state.pendingMutations) {
+                    mutation.apply(merged);
+                }
+                state.stats = merged;
+                state.pendingMutations.clear();
+                state.loaded = true;
+            }
         });
     }
 
@@ -33,51 +85,69 @@ public class StatsManager {
      * Save stats for a player to database and remove from cache.
      */
     public void saveStats(Player player) {
-        PlayerStats stats = statsCache.get(player.getUniqueId());
-        if (stats != null) {
-            plugin.getStorage().saveUser(player.getUniqueId(), player.getName(), stats);
-            statsCache.remove(player.getUniqueId());
+        UUID uuid = player.getUniqueId();
+        StatsState state = statsCache.get(uuid);
+        if (state == null) {
+            return;
         }
+        state.loadFuture.thenRun(() -> {
+            PlayerStats snapshot;
+            synchronized (state) {
+                snapshot = copyStats(state.stats);
+            }
+            plugin.getStorage().saveUser(uuid, player.getName(), snapshot).thenRun(() -> statsCache.remove(uuid));
+        });
     }
 
     /**
      * Save stats immediately without removing from cache.
-     * Used after duel ends to persist data right away.
      */
     public void saveStatsImmediately(Player player) {
-        PlayerStats stats = statsCache.get(player.getUniqueId());
-        if (stats != null) {
-            plugin.getStorage().saveUser(player.getUniqueId(), player.getName(), stats)
+        UUID uuid = player.getUniqueId();
+        StatsState state = statsCache.get(uuid);
+        if (state == null) {
+            return;
+        }
+
+        state.loadFuture.thenRun(() -> {
+            PlayerStats snapshot;
+            synchronized (state) {
+                snapshot = copyStats(state.stats);
+            }
+            plugin.getStorage().saveUser(uuid, player.getName(), snapshot)
                     .thenRun(() -> {
-                        // Refresh leaderboard after saving
                         if (plugin.getLeaderboardManager() != null) {
                             plugin.getLeaderboardManager().refreshCache();
                         }
                     });
+        });
+    }
+
+    /**
+     * Get stats for a player (cached view).
+     */
+    public PlayerStats getStats(Player player) {
+        StatsState state = getState(player.getUniqueId());
+        synchronized (state) {
+            return copyStats(state.stats);
         }
     }
 
     /**
-     * Get stats for a player (from cache or new empty stats).
-     */
-    public PlayerStats getStats(Player player) {
-        return statsCache.computeIfAbsent(player.getUniqueId(), k -> new PlayerStats());
-    }
-
-    /**
-     * Get stats by UUID (from cache or new empty stats).
+     * Get stats by UUID (cached view).
      */
     public PlayerStats getStats(UUID uuid) {
-        return statsCache.computeIfAbsent(uuid, k -> new PlayerStats());
+        StatsState state = getState(uuid);
+        synchronized (state) {
+            return copyStats(state.stats);
+        }
     }
 
     /**
      * Record a win for a player and save immediately.
      */
     public void recordWin(Player player) {
-        PlayerStats stats = getStats(player);
-        stats.recordWin();
-        statsCache.put(player.getUniqueId(), stats);
+        applyMutation(player.getUniqueId(), PlayerStats::recordWin);
         saveStatsImmediately(player);
     }
 
@@ -85,52 +155,42 @@ public class StatsManager {
      * Record a loss for a player and save immediately.
      */
     public void recordLoss(Player player) {
-        PlayerStats stats = getStats(player);
-        stats.recordLoss();
-        statsCache.put(player.getUniqueId(), stats);
+        applyMutation(player.getUniqueId(), PlayerStats::recordLoss);
         saveStatsImmediately(player);
     }
 
     /**
      * Legacy method - adds win without immediate save.
-     * 
+     *
      * @deprecated Use {@link #recordWin(Player)} instead
      */
     @Deprecated
     public void addWin(Player player) {
-        PlayerStats stats = getStats(player);
-        stats.setWins(stats.getWins() + 1);
-        statsCache.put(player.getUniqueId(), stats);
+        applyMutation(player.getUniqueId(), stats -> stats.setWins(stats.getWins() + 1));
     }
 
     /**
      * Legacy method - adds loss without immediate save.
-     * 
+     *
      * @deprecated Use {@link #recordLoss(Player)} instead
      */
     @Deprecated
     public void addLoss(Player player) {
-        PlayerStats stats = getStats(player);
-        stats.setLosses(stats.getLosses() + 1);
-        statsCache.put(player.getUniqueId(), stats);
+        applyMutation(player.getUniqueId(), stats -> stats.setLosses(stats.getLosses() + 1));
     }
 
     /**
      * Legacy method - adds kill without immediate save.
      */
     public void addKill(Player player) {
-        PlayerStats stats = getStats(player);
-        stats.setKills(stats.getKills() + 1);
-        statsCache.put(player.getUniqueId(), stats);
+        applyMutation(player.getUniqueId(), stats -> stats.setKills(stats.getKills() + 1));
     }
 
     /**
      * Legacy method - adds death without immediate save.
      */
     public void addDeath(Player player) {
-        PlayerStats stats = getStats(player);
-        stats.setDeaths(stats.getDeaths() + 1);
-        statsCache.put(player.getUniqueId(), stats);
+        applyMutation(player.getUniqueId(), stats -> stats.setDeaths(stats.getDeaths() + 1));
     }
 
     /**
@@ -142,9 +202,6 @@ public class StatsManager {
         });
     }
 
-    // Session Tracking
-    private final Map<UUID, Long> sessionStartTimes = new ConcurrentHashMap<>();
-
     public void startSession(Player player) {
         sessionStartTimes.put(player.getUniqueId(), System.currentTimeMillis());
     }
@@ -153,13 +210,11 @@ public class StatsManager {
         Long start = sessionStartTimes.remove(player.getUniqueId());
         if (start != null) {
             long duration = System.currentTimeMillis() - start;
-            PlayerStats stats = getStats(player);
-            stats.setPlaytime(stats.getPlaytime() + duration);
-            saveStats(player); // Save on quit
+            applyMutation(player.getUniqueId(), stats -> stats.setPlaytime(stats.getPlaytime() + duration));
+            saveStats(player);
         }
     }
 
-    // Helper to get live playtime including current session
     public long getPlaytime(Player player) {
         PlayerStats stats = getStats(player);
         long currentSession = 0;

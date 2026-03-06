@@ -3,9 +3,23 @@ package me.raikou.duels.duel;
 import me.raikou.duels.DuelsPlugin;
 import me.raikou.duels.arena.Arena;
 import me.raikou.duels.kit.Kit;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class DuelManager {
 
@@ -25,75 +39,105 @@ public class DuelManager {
             return;
         }
 
-        // Create Instance World
+        UUID p1Id = p1.getUniqueId();
+        UUID p2Id = p2.getUniqueId();
+        String templateWorldName = arena.getSpawn1().getWorld().getName();
         String instanceName = "duel_" + arena.getName() + "_" + UUID.randomUUID().toString().split("-")[0];
-        org.bukkit.World instanceWorld = plugin.getWorldManager()
-                .createDuelWorld(arena.getSpawn1().getWorld().getName(), instanceName);
-
-        if (instanceWorld == null) {
-            p1.sendMessage("Failed to create duel world!");
-            p2.sendMessage("Failed to create duel world!");
-            return;
-        }
-
-        List<UUID> players = Arrays.asList(p1.getUniqueId(), p2.getUniqueId());
-
-        // Give Kits with layout check
         Kit kit = plugin.getKitManager().getKit(kitName);
-        if (kit != null) {
-            applyKit(p1, kit, kitName);
-            applyKit(p2, kit, kitName);
-        }
 
-        // Create duel with ranked flag
-        Duel duel = new Duel(plugin, arena, players, kitName, instanceWorld, isRanked);
+        CompletableFuture<String> p1LayoutFuture = kit == null
+                ? CompletableFuture.completedFuture(null)
+                : plugin.getStorage().loadKitLayout(p1Id, kitName);
+        CompletableFuture<String> p2LayoutFuture = kit == null
+                ? CompletableFuture.completedFuture(null)
+                : plugin.getStorage().loadKitLayout(p2Id, kitName);
+        CompletableFuture<Boolean> worldPreparation = plugin.getWorldManager()
+                .prepareDuelWorldAsync(templateWorldName, instanceName)
+                .orTimeout(20, TimeUnit.SECONDS);
 
-        activeDuels.add(duel);
-        playerDuelMap.put(p1.getUniqueId(), duel);
-        playerDuelMap.put(p2.getUniqueId(), duel);
+        CompletableFuture.allOf(p1LayoutFuture, p2LayoutFuture, worldPreparation)
+                .thenRun(() -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    Player player1 = Bukkit.getPlayer(p1Id);
+                    Player player2 = Bukkit.getPlayer(p2Id);
+                    if (player1 == null || player2 == null || !player1.isOnline() || !player2.isOnline()) {
+                        plugin.getWorldManager().cleanupPreparedWorld(instanceName);
+                        return;
+                    }
 
-        duel.start();
-        plugin.getDiscordManager().onDuelStart(duel, kitName);
+                    if (!worldPreparation.getNow(false)) {
+                        player1.sendMessage("Failed to create duel world!");
+                        player2.sendMessage("Failed to create duel world!");
+                        plugin.getWorldManager().cleanupPreparedWorld(instanceName);
+                        return;
+                    }
+
+                    World instanceWorld = plugin.getWorldManager().loadPreparedWorld(instanceName);
+                    if (instanceWorld == null) {
+                        player1.sendMessage("Failed to load duel world!");
+                        player2.sendMessage("Failed to load duel world!");
+                        plugin.getWorldManager().cleanupPreparedWorld(instanceName);
+                        return;
+                    }
+
+                    if (kit != null) {
+                        applyKit(player1, kit, p1LayoutFuture.getNow(null));
+                        applyKit(player2, kit, p2LayoutFuture.getNow(null));
+                    }
+
+                    List<UUID> players = Arrays.asList(p1Id, p2Id);
+                    Duel duel = new Duel(plugin, arena, players, kitName, instanceWorld, isRanked);
+
+                    activeDuels.add(duel);
+                    playerDuelMap.put(p1Id, duel);
+                    playerDuelMap.put(p2Id, duel);
+
+                    duel.start();
+                    plugin.getDiscordManager().onDuelStart(duel, kitName);
+                }))
+                .exceptionally(throwable -> {
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        Player player1 = Bukkit.getPlayer(p1Id);
+                        Player player2 = Bukkit.getPlayer(p2Id);
+                        if (player1 != null) {
+                            player1.sendMessage("Failed to start duel.");
+                        }
+                        if (player2 != null) {
+                            player2.sendMessage("Failed to start duel.");
+                        }
+                        plugin.getWorldManager().cleanupPreparedWorld(instanceName);
+                    });
+                    plugin.getLogger().warning("startDuel failed: " + throwable.getMessage());
+                    return null;
+                });
     }
 
-    private void applyKit(Player player, Kit kit, String kitName) {
-        // Load layout synchronously for valid start (or cache it? Storage is async.
-        // For production, we should preload layouts on join or before matching.
-        // For now, we will block or rely on fast SQLite.
-        // Actually, CompletableFuture join() is okay here for simplicity in this turn,
-        // but ideally we refactor startDuel to be async or callback based.
-        // Let's use join() as we are already on main thread and logic is simple.
-        String layoutData = plugin.getStorage().loadKitLayout(player.getUniqueId(), kitName).join();
-
+    private void applyKit(Player player, Kit kit, String layoutData) {
         if (layoutData != null && !layoutData.isEmpty()) {
-            // Helper method logic similar to KitEditorManager, but we need to centralize it
-            // or duplicate for now.
-            // Duplication is cleaner for this interaction step, but refactoring later is
-            // good.
-            // Wait, I can't easily access KitEditorManager's private method or logic if
-            // it's not static.
-            // I will duplicate the layout application logic here properly, as it's the game
-            // logic version.
-
             player.getInventory().clear();
-            kit.equip(player); // Default modify
+            kit.equip(player);
 
-            // Now rearrange
-            org.bukkit.inventory.Inventory temp = org.bukkit.Bukkit.createInventory(null, 54);
+            Inventory temp = Bukkit.createInventory(null, 54);
             temp.setContents(player.getInventory().getContents());
             player.getInventory().clear();
 
             String[] entries = layoutData.split(",");
             for (String entry : entries) {
                 String[] parts = entry.split(":");
-                if (parts.length != 2)
+                if (parts.length != 2) {
                     continue;
+                }
                 try {
                     int slot = Integer.parseInt(parts[0]);
-                    org.bukkit.Material mat = org.bukkit.Material.getMaterial(parts[1]);
+                    if (slot < 0 || slot >= player.getInventory().getSize()) {
+                        continue;
+                    }
+                    Material mat = Material.getMaterial(parts[1]);
+                    if (mat == null) {
+                        continue;
+                    }
 
                     for (int i = 0; i < temp.getSize(); i++) {
-                        org.bukkit.inventory.ItemStack item = temp.getItem(i);
+                        ItemStack item = temp.getItem(i);
                         if (item != null && item.getType() == mat) {
                             player.getInventory().setItem(slot, item);
                             temp.setItem(i, null);
@@ -104,21 +148,19 @@ public class DuelManager {
                 }
             }
 
-            for (org.bukkit.inventory.ItemStack remaining : temp.getContents()) {
+            for (ItemStack remaining : temp.getContents()) {
                 if (remaining != null) {
                     player.getInventory().addItem(remaining);
                 }
             }
 
-            // Restore armor
             player.getInventory().setHelmet(kit.getHelmet());
             player.getInventory().setChestplate(kit.getChestplate());
             player.getInventory().setLeggings(kit.getLeggings());
             player.getInventory().setBoots(kit.getBoots());
-
-        } else {
-            kit.equip(player);
+            return;
         }
+        kit.equip(player);
     }
 
     public void removeDuel(Duel duel) {
@@ -136,9 +178,6 @@ public class DuelManager {
         return playerDuelMap.containsKey(player.getUniqueId());
     }
 
-    /**
-     * Get all active duels (unmodifiable set).
-     */
     public Set<Duel> getActiveDuels() {
         return Collections.unmodifiableSet(activeDuels);
     }

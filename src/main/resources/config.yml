@@ -89,6 +89,13 @@ lobby:
     vertical-multiplier: 0.8
     # Cooldown between double jumps in milliseconds
     cooldown-ms: 500
+  # Lobby spawn location
+  world: lobi
+  x: 0.4705661987265322
+  y: 191.0
+  z: 0.381356655356731
+  yaw: 140.26251
+  pitch: -0.20012859
 
 storage:
   # Type of storage: 'mysql' or 'sqlite'
@@ -102,6 +109,10 @@ storage:
     database: duels
     username: root
     password: ''
+  pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    connection-timeout-ms: 10000
 
 # ==========================================
 #               ARENAS
@@ -242,13 +253,6 @@ kits:
       chestplate: DIAMOND_CHESTPLATE:1
       leggings: DIAMOND_LEGGINGS:1
       boots: DIAMOND_BOOTS:1
-lobby:
-  world: lobi
-  x: 0.4705661987265322
-  y: 191.0
-  z: 0.381356655356731
-  yaw: 140.26251
-  pitch: -0.20012859
 
 # ==========================================
 #             SCOREBOARD
